@@ -44,3 +44,16 @@ htmlcov/
 # Data (keep instructions README only)
 data/*
 !data/README.md
+# LaTeX
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+report/build/
