@@ -1,0 +1,7 @@
+- Professional standards:
+- Legal/IP & licensing:
+- Privacy & security:
+- Accessibility (WCAG etc.):
+- Sustainability & environment:
+- Economic/commercial context:
+- Risks/harms & mitigations:
