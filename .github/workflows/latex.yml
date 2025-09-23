@@ -1,0 +1,23 @@
+name: Build Report PDF
+on:
+  push:
+    paths:
+      - 'report/**'
+      - '.github/workflows/latex.yml'
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: xu-cheng/latex-action@v3
+        with:
+          working_directory: report
+          root_file: main.tex
+          latexmk_use_lualatex: false
+          extra_system_packages: biber
+          pre_compile: tlmgr update --self && tlmgr install biblatex csquotes microtype cleveref
+      - uses: actions/upload-artifact@v4
+        with:
+          name: report-pdf
+          path: report/main.pdf
