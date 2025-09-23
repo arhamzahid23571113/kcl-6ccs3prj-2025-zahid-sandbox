@@ -1,0 +1,7 @@
+- Human data/users involved? (Y/N)
+- Data sources & licenses:
+- Identifiers present (PII/sensitive)?:
+- Storage/retention/transfer plan:
+- Security (access control/encryption):
+- Accessibility & fairness considerations:
+- Ethics approval needed? If yes: form/supervisor/timeline:
