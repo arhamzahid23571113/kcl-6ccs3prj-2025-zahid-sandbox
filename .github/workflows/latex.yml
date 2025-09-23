@@ -20,4 +20,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: report-pdf
-          path: report/main.pdf
+          path: report/build/main.pdf
