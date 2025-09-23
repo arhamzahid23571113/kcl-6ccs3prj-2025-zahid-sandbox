@@ -1,0 +1,12 @@
+# Key Deadlines (all 4pm BST)
+- 20 Oct 2025 (Mon): Project allocations
+- 07 Nov 2025 (Fri): 1st slides due & 1st group supervision by this date
+- 21 Nov 2025 (Fri): 2nd slides due & 2nd group supervision by this date
+- 12 Dec 2025 (Fri): 3rd slides due & 3rd group supervision by this date
+- 19 Dec 2025 (Fri): BSPR submission
+- 07 Feb 2026 (Sat): BSPR feedback; 1st individual meeting by this date
+- 21 Feb 2026 (Sat): 4th slides due & 4th group supervision by this date
+- 13 Mar 2026 (Fri): 5th slides due & 5th group supervision by this date
+- 03 Apr 2026 (Fri): 2nd individual meeting by this date
+- 16 Apr 2026 (Thu): Final report due
+- 23 Apr 2026 (Thu): 10-minute video due
