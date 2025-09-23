@@ -57,3 +57,4 @@ data/*
 *.synctex.gz
 *.toc
 report/build/
+report/main.pdf

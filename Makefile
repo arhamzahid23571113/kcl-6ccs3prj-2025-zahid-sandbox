@@ -8,3 +8,6 @@ open:
 
 clean:
 	@cd report && latexmk -C && rm -rf build/*
+
+watch:
+	@cd report && latexmk -pdf -pvc -halt-on-error main.tex
