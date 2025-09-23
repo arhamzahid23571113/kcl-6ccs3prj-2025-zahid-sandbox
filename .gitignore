@@ -1,8 +1,46 @@
+# macOS
 .DS_Store
+Thumbs.db
+
+# Editors
 .vscode/
 .idea/
+
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.so
+.venv/
+.venv*/
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.cache/
+
+# Env files
+.env
+*.env
+
+# Node/JS (if used)
 node_modules/
+
+# Build / Dist / Docs sites
 dist/
 build/
+site/
+
+# Coverage
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Logs
+*.log
+
+# Data (keep instructions README only)
+data/*
+!data/README.md
