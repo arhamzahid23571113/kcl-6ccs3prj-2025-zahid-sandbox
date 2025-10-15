@@ -6,6 +6,7 @@ import time
 import torch
 from torch.utils.data import DataLoader, Subset
 from torchvision import datasets, transforms
+from tqdm import tqdm
 
 from attacks.one_pixel_random import CIFAR10_MEAN, CIFAR10_STD, one_pixel_random_attack
 
@@ -50,8 +51,10 @@ def main():
     t0 = time.time()
     with open(args.out, "w", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["image_id", "true", "pred_before", "success", "iters_used"])
-        for k, (xb, yb) in enumerate(DataLoader(ds, batch_size=1, shuffle=False)):
+        w.writerow(["image_id", "true", "pred_before", "pred_after", "success", "iters_used"])
+        for k, (xb, yb) in enumerate(
+            tqdm(DataLoader(ds, batch_size=1, shuffle=False), total=len(ds))
+        ):
             x = xb[0].to(device)
             y = int(yb[0].item())
             pred_before = int(model(x.unsqueeze(0)).argmax(dim=1).item())
@@ -60,8 +63,11 @@ def main():
                 continue
             total += 1
             x_adv, ok, iters_used = one_pixel_random_attack(model, x, y, trials=args.trials)
+            pred_after = int(model(x_adv.unsqueeze(0)).argmax(dim=1).item())
             success += int(ok)
-            w.writerow([k, y, pred_before, int(ok), iters_used])
+            w.writerow([k, y, pred_before, pred_after, int(ok), iters_used])
+            f.flush()
+            f.flush()
 
     dt = time.time() - t0
     rate = success / max(total, 1)
