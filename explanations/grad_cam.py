@@ -33,8 +33,10 @@ class GradCAM:
     @torch.no_grad()
     def _norm(self, cam: torch.Tensor) -> torch.Tensor:
         cam = cam - cam.min()
-        denom = cam.max().clamp(min=1e-12)
-        return cam / denom
+        eps = torch.tensor(
+            torch.finfo(cam.dtype).eps, device=cam.device, dtype=cam.dtype
+        )
+        return cam / cam.max().clamp(min=eps)
 
     def generate(self, x: torch.Tensor, target_class: int) -> torch.Tensor:
         self.model.zero_grad(set_to_none=True)
@@ -47,7 +49,9 @@ class GradCAM:
         weights = grads.mean(dim=(2, 3), keepdim=True)
         cam = (weights * acts).sum(dim=1, keepdim=True)
         cam = F.relu(cam)
-        cam = F.interpolate(cam, size=x.shape[-2:], mode="bilinear", align_corners=False)
+        cam = F.interpolate(
+            cam, size=x.shape[-2:], mode="bilinear", align_corners=False
+        )
         with torch.no_grad():
             cam = self._norm(cam)
         return cam

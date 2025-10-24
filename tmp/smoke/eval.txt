@@ -1,0 +1,2 @@
+[OK] Saved per-image results → results/tables/baseline_cifar10.csv
+total=100 | acc=0.9300 | nll=0.270 | time_s=7.9

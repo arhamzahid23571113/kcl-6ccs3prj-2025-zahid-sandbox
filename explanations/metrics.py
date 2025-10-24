@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import numpy as np
 import torch
 
 _SAL_NDIMS = 4
@@ -28,15 +27,22 @@ def _rankdata_torch(x: torch.Tensor) -> torch.Tensor:
     flat = x.view(-1)
     order = torch.argsort(flat)
     ranks = torch.empty_like(order, dtype=torch.float32)
-    ranks[order] = torch.arange(1, order.numel() + 1, device=x.device, dtype=torch.float32)
+    ranks[order] = torch.arange(
+        1, order.numel() + 1, device=x.device, dtype=torch.float32
+    )
     return ranks.view_as(x)
 
 
 def spearman_r(a: torch.Tensor, b: torch.Tensor) -> float:
+    a = a.to(dtype=torch.float32)
+    b = b.to(dtype=torch.float32)
     ra = _rankdata_torch(a)
     rb = _rankdata_torch(b)
-    ra = (ra - ra.mean()) / (ra.std(unbiased=False) + 1e-12)
-    rb = (rb - rb.mean()) / (rb.std(unbiased=False) + 1e-12)
+    eps = torch.tensor(
+        torch.finfo(torch.float32).eps, device=a.device, dtype=torch.float32
+    )
+    ra = (ra - ra.mean()) / (ra.std(unbiased=False) + eps)
+    rb = (rb - rb.mean()) / (rb.std(unbiased=False) + eps)
     return float((ra * rb).mean().item())
 
 
@@ -49,30 +55,34 @@ def deletion_auc(  # noqa: PLR0913
     steps: int = 20,
     replace_value: float = 0.0,
 ) -> float:
-    assert x.ndim == _SAL_NDIMS and sal.ndim == _SAL_NDIMS and x.shape[-2:] == sal.shape[-2:]
+    assert (
+        x.ndim == _SAL_NDIMS
+        and sal.ndim == _SAL_NDIMS
+        and x.shape[-2:] == sal.shape[-2:]
+    )
     _, _, H, W = x.shape
     Npix = H * W
     k_step = max(1, Npix // steps)
 
-    # rank pixels (highest saliency first)
     flat = sal.view(-1)
     order = torch.argsort(flat, descending=True)
     invrank = torch.empty_like(order)
     invrank[order] = torch.arange(Npix, device=order.device)
     invrank = invrank.view(1, 1, H, W)
 
-    # build progressively masked inputs (shape: [steps+1, C, H, W])
     ks = torch.arange(0, steps + 1, device=x.device) * k_step
     ks = torch.clamp(ks, max=Npix)
-    masks = (invrank < ks.view(-1, 1, 1, 1)).to(x.dtype)  # [steps+1, 1, H, W]
+    masks = (invrank < ks.view(-1, 1, 1, 1)).to(x.dtype)
 
     X = x.expand(steps + 1, -1, -1, -1)
     X = X * (1.0 - masks) + replace_value * masks
 
     logits = model(X)
-    probs = logits.softmax(dim=1)[:, target_class]
-    probs_np = probs.detach().cpu().numpy()
+    probs = logits.softmax(dim=1)[:, target_class].float()
 
-    xs_axis = np.linspace(0.0, 1.0, steps + 1)
-    auc = float(np.trapz(y=probs_np, x=xs_axis))
-    return auc
+    probs_cpu = probs.detach().to("cpu")
+    xs_axis = torch.linspace(
+        0.0, 1.0, steps + 1, device=probs_cpu.device, dtype=probs_cpu.dtype
+    )
+    auc = torch.trapz(probs_cpu, xs_axis).item()
+    return float(auc)

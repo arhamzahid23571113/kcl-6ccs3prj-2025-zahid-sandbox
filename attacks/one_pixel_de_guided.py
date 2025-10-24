@@ -5,13 +5,8 @@ from dataclasses import dataclass
 import torch
 import torch.nn.functional as F
 
-from attacks.one_pixel_de import (
-    _CHANNELS,
-    _TENSOR_NDIMS,
-    AttackParams,
-    AttackResult,
-    OnePixelDEAttack,
-)
+from attacks.one_pixel_de import (_CHANNELS, _TENSOR_NDIMS, AttackParams,
+                                  AttackResult, OnePixelDEAttack)
 from explanations.rise import RISE
 
 
@@ -34,7 +29,9 @@ class OnePixelDERISEGuided(OnePixelDEAttack):
         params: AttackParams,
         guide: RiseGuideParams | None = None,
     ) -> None:
-        super().__init__(model=model, preprocess=preprocess, device=device, params=params)
+        super().__init__(
+            model=model, preprocess=preprocess, device=device, params=params
+        )
         self.guide = guide or RiseGuideParams()
         self._rise = RISE(
             model=self.model,
@@ -60,7 +57,9 @@ class OnePixelDERISEGuided(OnePixelDEAttack):
         idx = torch.multinomial(self._prior_weights, num_samples=P, replacement=True)
         y = torch.div(idx, W, rounding_mode="floor")
         x = idx % W
-        return torch.stack([x, y], dim=1).to(dtype=torch.float32, device=self._prior_weights.device)
+        return torch.stack([x, y], dim=1).to(
+            dtype=torch.float32, device=self._prior_weights.device
+        )
 
     def _init_population(self, P: int, H: int, W: int, device: str) -> torch.Tensor:
         if self._prior_weights is not None:
