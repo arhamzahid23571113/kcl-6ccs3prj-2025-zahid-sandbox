@@ -1,0 +1,3 @@
+ds_idx,true,pred_clean,pred_adv,iou10_gc,iou10_ig,iou10_rise,rho_gc,rho_ig,rho_rise,del_auc_gc_clean,del_auc_ig_clean,del_auc_rise_clean
+0,3,3,,,,,,,,0.25775844290619715,0.7284432043932612,0.34594607997172494
+1,8,8,,,,,,,,0.3602094526373548,0.36725802006480995,0.1820368507838339
