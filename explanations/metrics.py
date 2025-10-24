@@ -3,13 +3,12 @@ from __future__ import annotations
 import numpy as np
 import torch
 
-NCHW_DIMS = 4
-CHANNEL_DIM = 1
-SINGLE_CHANNEL = 1
+_SAL_NDIMS = 4
+_SAL_CH = 1
 
 
 def topk_mask(sal: torch.Tensor, k_frac: float) -> torch.Tensor:
-    assert sal.ndim == NCHW_DIMS and sal.shape[CHANNEL_DIM] == SINGLE_CHANNEL
+    assert sal.ndim == _SAL_NDIMS and sal.shape[1] == _SAL_CH
     H, W = sal.shape[-2:]
     k = max(1, int(round(k_frac * H * W)))
     flat = sal.view(1, -1)
@@ -50,26 +49,28 @@ def deletion_auc(  # noqa: PLR0913
     steps: int = 20,
     replace_value: float = 0.0,
 ) -> float:
-    C, H, W = x.shape[1:]
-    flat_sal = sal.view(-1)
-    order = torch.argsort(flat_sal, descending=True)
+    assert x.ndim == _SAL_NDIMS and sal.ndim == _SAL_NDIMS and x.shape[-2:] == sal.shape[-2:]
+    _, _, H, W = x.shape
+    Npix = H * W
+    k_step = max(1, Npix // steps)
 
-    xs = x.clone()
-    probs = []
-    for t in range(steps + 1):
-        logits = model(xs)
-        p = logits.softmax(dim=1)[0, target_class].item()
-        probs.append(p)
-        if t == steps:
-            break
-        start = t * (H * W // steps)
-        end = min((t + 1) * (H * W // steps), H * W)
-        idx = order[start:end]
-        hh = (idx // W).long()
-        ww = (idx % W).long()
-        for h, w in zip(hh, ww, strict=False):
-            xs[0, :, h, w] = replace_value
+    flat = sal.view(-1)
+    order = torch.argsort(flat, descending=True)
+    invrank = torch.empty_like(order)
+    invrank[order] = torch.arange(Npix, device=order.device)
+    invrank = invrank.view(1, 1, H, W)
+
+    ks = torch.arange(0, steps + 1, device=x.device) * k_step
+    ks = torch.clamp(ks, max=Npix)
+    masks = (invrank < ks.view(-1, 1, 1, 1, 1)).to(x.dtype)
+
+    X = x.expand(steps + 1, -1, -1, -1)
+    X = X * (1.0 - masks) + replace_value * masks
+
+    logits = model(X)
+    probs = logits.softmax(dim=1)[:, target_class]
+    probs_np = probs.detach().cpu().numpy()
 
     xs_axis = np.linspace(0.0, 1.0, steps + 1)
-    auc = float(np.trapz(y=np.array(probs), x=xs_axis))
+    auc = float(np.trapz(y=probs_np, x=xs_axis))
     return auc

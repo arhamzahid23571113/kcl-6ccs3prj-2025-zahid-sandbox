@@ -17,15 +17,18 @@ class RISE:
 
     @torch.no_grad()
     def _generate_masks(self, H: int, W: int, device) -> torch.Tensor:
-        m = (torch.rand(self.n_masks, 1, self.s, self.s, device=device) < self.p).float()
-        m = F.interpolate(m, size=(H + 2, W + 2), mode="bilinear", align_corners=False)
-        r_h = torch.randint(0, 2, (self.n_masks,), device=device)
-        r_w = torch.randint(0, 2, (self.n_masks,), device=device)
-        masks = torch.zeros(self.n_masks, 1, H, W, device=device)
-        for i in range(self.n_masks):
-            masks[i, :, :, :] = m[i, :, r_h[i] : r_h[i] + H, r_w[i] : r_w[i] + W]
-        mean = masks.view(self.n_masks, -1).mean(dim=1).view(-1, 1, 1, 1).clamp(min=1e-6)
-        masks = masks / mean
+        small = (torch.rand(self.n_masks, 1, self.s, self.s, device=device) < self.p).float()
+        masks = F.interpolate(small, size=(H, W), mode="bilinear", align_corners=False)
+        cell_h = max(1, H // self.s)
+        cell_w = max(1, W // self.s)
+        sh_h = torch.randint(0, cell_h, (self.n_masks,), device=device)
+        sh_w = torch.randint(0, cell_w, (self.n_masks,), device=device)
+        h_idx = (torch.arange(H, device=device).view(1, 1, H, 1) + sh_h.view(-1, 1, 1, 1)) % H
+        masks = masks.gather(2, h_idx.expand(self.n_masks, 1, H, W))
+        w_idx = (torch.arange(W, device=device).view(1, 1, 1, W) + sh_w.view(-1, 1, 1, 1)) % W
+        masks = masks.gather(3, w_idx.expand(self.n_masks, 1, H, W))
+        mean = masks.flatten(2).mean(dim=2, keepdim=True).clamp(min=1e-6)
+        masks = masks / mean.view(self.n_masks, 1, 1, 1)
         return masks
 
     @torch.no_grad()
@@ -38,8 +41,8 @@ class RISE:
             mb = masks[i : i + self.batch]
             xm = x * mb
             logits = self.model(xm)
-            scores = logits.softmax(dim=-1)[:, target_class]
-            w = scores.view(-1, 1, 1, 1)
+            probs = logits.softmax(dim=1)[:, target_class]
+            w = probs.view(-1, 1, 1, 1)
             sal += (w * mb).sum(dim=0, keepdim=True)
         sal = sal - sal.min()
         sal = sal / sal.max().clamp(min=1e-12)
