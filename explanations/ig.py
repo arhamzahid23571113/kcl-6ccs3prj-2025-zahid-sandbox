@@ -14,12 +14,6 @@ class IntegratedGradients:
         self.model = model.eval()
         self.steps = steps
         self.use_captum = use_captum and (_CaptumIG is not None)
-        if self.use_captum:
-
-            def fwd(x):
-                return self.model(x)
-
-            self.ig = _CaptumIG(fwd)
 
     @torch.no_grad()
     def _norm(self, A: torch.Tensor) -> torch.Tensor:
@@ -32,17 +26,23 @@ class IntegratedGradients:
     ) -> torch.Tensor:
         if baseline is None:
             baseline = torch.zeros_like(x)
-        if self.use_captum:
-            attributions = self.ig.attribute(
+
+        use_captum_now = self.use_captum and (x.device.type != "mps")
+        if use_captum_now:
+            ig = _CaptumIG(lambda t: self.model(t))
+            attributions = ig.attribute(
                 inputs=x, baselines=baseline, target=target_class, n_steps=self.steps
             )
         else:
-            alphas = torch.linspace(0, 1, steps=self.steps, device=x.device).view(-1, 1, 1, 1)
+            alphas = torch.linspace(0, 1, steps=self.steps, device=x.device, dtype=x.dtype).view(
+                -1, 1, 1, 1
+            )
             path = baseline + alphas * (x - baseline)
             path.requires_grad_(True)
             logits = self.model(path)
             score = logits[:, target_class].sum()
-            grads = torch.autograd.grad(score, path, retain_graph=False)[0]
+            grads = torch.autograd.grad(score, path, retain_graph=False, create_graph=False)[0]
             attributions = (x - baseline) * grads.mean(dim=0, keepdim=True)
+
         sal = attributions.abs().sum(dim=1, keepdim=True)
         return self._norm(sal)
