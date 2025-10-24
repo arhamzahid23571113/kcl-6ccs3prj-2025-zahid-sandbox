@@ -54,15 +54,17 @@ def deletion_auc(  # noqa: PLR0913
     Npix = H * W
     k_step = max(1, Npix // steps)
 
+    # rank pixels (highest saliency first)
     flat = sal.view(-1)
     order = torch.argsort(flat, descending=True)
     invrank = torch.empty_like(order)
     invrank[order] = torch.arange(Npix, device=order.device)
     invrank = invrank.view(1, 1, H, W)
 
+    # build progressively masked inputs (shape: [steps+1, C, H, W])
     ks = torch.arange(0, steps + 1, device=x.device) * k_step
     ks = torch.clamp(ks, max=Npix)
-    masks = (invrank < ks.view(-1, 1, 1, 1, 1)).to(x.dtype)
+    masks = (invrank < ks.view(-1, 1, 1, 1)).to(x.dtype)  # [steps+1, 1, H, W]
 
     X = x.expand(steps + 1, -1, -1, -1)
     X = X * (1.0 - masks) + replace_value * masks
