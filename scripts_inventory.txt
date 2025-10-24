@@ -1,0 +1,44 @@
+### scripts tree
+scripts
+├── __init__.py
+├── eval_cifar10.py
+├── run_explanations.py
+├── run_one_pixel_de.py
+├── run_one_pixel_de_guided.py
+├── run_one_pixel_de_targeted_fastprior.py
+├── run_one_pixel_de_targeted_mt.py
+├── run_one_pixel_de_targeted_mt_prior.py
+├── run_one_pixel_de_targeted_mt_prior_v2.py
+├── run_one_pixel_de_targeted_sweep.py
+├── run_one_pixel_random.py
+├── summarize_explanations.py
+└── summarize_targeted_any.py
+
+1 directory, 13 files
+
+### file sizes & line counts
+       1 lines        23 bytes  scripts/__init__.py
+       2 lines       203 bytes  scripts/__pycache__/__init__.cpython-311.pyc
+      81 lines      8085 bytes  scripts/__pycache__/eval_cifar10.cpython-311.pyc
+      47 lines     10295 bytes  scripts/__pycache__/run_explanations.cpython-311.pyc
+      84 lines     12536 bytes  scripts/__pycache__/run_one_pixel_de.cpython-311.pyc
+      82 lines     13445 bytes  scripts/__pycache__/run_one_pixel_de_guided.cpython-311.pyc
+      53 lines     12420 bytes  scripts/__pycache__/run_one_pixel_de_targeted_fastprior.cpython-311.pyc
+     116 lines     22512 bytes  scripts/__pycache__/run_one_pixel_de_targeted_mt.cpython-311.pyc
+      50 lines     11747 bytes  scripts/__pycache__/run_one_pixel_de_targeted_mt_prior.cpython-311.pyc
+      51 lines     11398 bytes  scripts/__pycache__/run_one_pixel_de_targeted_mt_prior_v2.cpython-311.pyc
+      65 lines     13535 bytes  scripts/__pycache__/run_one_pixel_de_targeted_sweep.cpython-311.pyc
+      59 lines     11231 bytes  scripts/__pycache__/run_one_pixel_random.cpython-311.pyc
+      55 lines      7490 bytes  scripts/__pycache__/summarize_explanations.cpython-311.pyc
+     135 lines      4608 bytes  scripts/eval_cifar10.py
+     173 lines      6041 bytes  scripts/run_explanations.py
+     245 lines      8222 bytes  scripts/run_one_pixel_de.py
+     250 lines      8513 bytes  scripts/run_one_pixel_de_guided.py
+     193 lines      6826 bytes  scripts/run_one_pixel_de_targeted_fastprior.py
+     360 lines     13643 bytes  scripts/run_one_pixel_de_targeted_mt.py
+     159 lines      6305 bytes  scripts/run_one_pixel_de_targeted_mt_prior.py
+     150 lines      6121 bytes  scripts/run_one_pixel_de_targeted_mt_prior_v2.py
+     191 lines      7899 bytes  scripts/run_one_pixel_de_targeted_sweep.py
+     240 lines      7812 bytes  scripts/run_one_pixel_random.py
+      97 lines      3938 bytes  scripts/summarize_explanations.py
+      46 lines      1729 bytes  scripts/summarize_targeted_any.py

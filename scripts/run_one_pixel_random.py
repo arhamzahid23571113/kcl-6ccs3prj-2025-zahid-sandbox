@@ -20,18 +20,21 @@ def get_device(explicit: str | None) -> str:
 
 
 def cifar10_preprocess(batch_01: torch.Tensor) -> torch.Tensor:
-    mean = torch.tensor([0.4914, 0.4822, 0.4465], dtype=batch_01.dtype, device=batch_01.device)[
-        :, None, None
-    ]
-    std = torch.tensor([0.2470, 0.2435, 0.2616], dtype=batch_01.dtype, device=batch_01.device)[
-        :, None, None
-    ]
+    mean = torch.tensor(
+        [0.4914, 0.4822, 0.4465], dtype=batch_01.dtype, device=batch_01.device
+    )[:, None, None]
+    std = torch.tensor(
+        [0.2470, 0.2435, 0.2616], dtype=batch_01.dtype, device=batch_01.device
+    )[:, None, None]
     return (batch_01 - mean) / std
 
 
 def load_model(device: str) -> torch.nn.Module:
     model = torch.hub.load(
-        "chenyaofo/pytorch-cifar-models", "cifar10_resnet20", pretrained=True, verbose=False
+        "chenyaofo/pytorch-cifar-models",
+        "cifar10_resnet20",
+        pretrained=True,
+        verbose=False,
     )
     model.eval().to(device)
     return model
@@ -66,7 +69,9 @@ def read_indices_file(path: str | None) -> list[int] | None:
 
 
 def main() -> None:  # noqa: PLR0912, PLR0915  (CLI with branches/steps)
-    ap = argparse.ArgumentParser(description="Random one-pixel attack (box-constrained)")
+    ap = argparse.ArgumentParser(
+        description="Random one-pixel attack (box-constrained)"
+    )
     ap.add_argument(
         "--limit",
         type=int,
@@ -96,7 +101,9 @@ def main() -> None:  # noqa: PLR0912, PLR0915  (CLI with branches/steps)
     )
     indices = read_indices_file(args.indices_file)
     ds = Subset(base_ds, indices) if indices else base_ds  # noqa: SIM108
-    dl = DataLoader(ds, batch_size=args.batch_size, shuffle=False, num_workers=2, pin_memory=False)
+    dl = DataLoader(
+        ds, batch_size=args.batch_size, shuffle=False, num_workers=2, pin_memory=False
+    )
 
     model = load_model(device)
 
@@ -107,7 +114,9 @@ def main() -> None:  # noqa: PLR0912, PLR0915  (CLI with branches/steps)
         for batch_x01, batch_y in dl:
             if len(eligible) >= args.limit:
                 break
-            batch_x01_dev = batch_x01.to(device)  # avoid overwriting loop var (fixes PLW2901)
+            batch_x01_dev = batch_x01.to(
+                device
+            )  # avoid overwriting loop var (fixes PLW2901)
             logits = model(cifar10_preprocess(batch_x01_dev))
             preds = logits.argmax(dim=1)
             for i in range(batch_x01_dev.size(0)):
@@ -116,7 +125,9 @@ def main() -> None:  # noqa: PLR0912, PLR0915  (CLI with branches/steps)
                 ds_idx = indices[batch_start + i] if indices else (batch_start + i)
                 if preds[i].item() == batch_y[i].item():
                     # store CPU 0..1 tensor for the runner
-                    eligible.append((ds_idx, batch_x01[i].cpu(), int(batch_y[i].item())))
+                    eligible.append(
+                        (ds_idx, batch_x01[i].cpu(), int(batch_y[i].item()))
+                    )
             batch_start += batch_x01_dev.size(0)
 
     if not eligible:

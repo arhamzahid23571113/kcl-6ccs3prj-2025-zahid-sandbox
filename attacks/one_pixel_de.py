@@ -60,8 +60,12 @@ def _set_seeds(seed: int | None) -> None:
 
 def _cifar10_normalize(img: torch.Tensor) -> torch.Tensor:
     """Default CIFAR-10 normalization (0..1 -> normalized)."""
-    mean = torch.tensor([0.4914, 0.4822, 0.4465], dtype=img.dtype, device=img.device)[:, None, None]
-    std = torch.tensor([0.2470, 0.2435, 0.2616], dtype=img.dtype, device=img.device)[:, None, None]
+    mean = torch.tensor([0.4914, 0.4822, 0.4465], dtype=img.dtype, device=img.device)[
+        :, None, None
+    ]
+    std = torch.tensor([0.2470, 0.2435, 0.2616], dtype=img.dtype, device=img.device)[
+        :, None, None
+    ]
     return (img - mean) / std
 
 
@@ -185,7 +189,9 @@ class OnePixelDEAttack:
 
         # Binomial crossover
         cross_mask = torch.rand(P, D, device=pop.device) < self.params.Cr
-        j_rand = torch.randint(0, D, (P,), device=pop.device)  # ensure at least one donor dim
+        j_rand = torch.randint(
+            0, D, (P,), device=pop.device
+        )  # ensure at least one donor dim
         cross_mask[idx, j_rand] = True
         trial = torch.where(cross_mask, donor, pop)
 
@@ -218,7 +224,9 @@ class OnePixelDEAttack:
         logits = self.model(x_in)
         probs = F.softmax(logits, dim=1)
 
-        fitness = probs[:, target_idx] if mode == "targeted" else (1.0 - probs[:, target_idx])
+        fitness = (
+            probs[:, target_idx] if mode == "targeted" else (1.0 - probs[:, target_idx])
+        )
         return fitness
 
     def _success_from_fitness(self, fitness: torch.Tensor, mode: str) -> torch.Tensor:

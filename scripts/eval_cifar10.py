@@ -52,20 +52,34 @@ def get_loader(root: str, batch_size: int, num_images: int | None):
         idx = list(range(len(ds)))
         random.Random(1337).shuffle(idx)
         ds = Subset(ds, idx[:num_images])
-    return DataLoader(ds, batch_size=batch_size, shuffle=False, num_workers=2, pin_memory=False)
+    return DataLoader(
+        ds, batch_size=batch_size, shuffle=False, num_workers=2, pin_memory=False
+    )
 
 
 @torch.no_grad()
 def evaluate(model, loader, device, out_csv: str):
     os.makedirs(Path(out_csv).parent, exist_ok=True)
-    base_ds = loader.dataset.dataset if isinstance(loader.dataset, Subset) else loader.dataset
+    base_ds = (
+        loader.dataset.dataset if isinstance(loader.dataset, Subset) else loader.dataset
+    )
     classes = getattr(base_ds, "classes", [str(i) for i in range(10)])
 
     total, correct, nll_sum = 0, 0, 0.0
     t0 = time.time()
     with open(out_csv, "w", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["image_id", "label_idx", "label", "pred_idx", "pred", "correct", "confidence"])
+        w.writerow(
+            [
+                "image_id",
+                "label_idx",
+                "label",
+                "pred_idx",
+                "pred",
+                "correct",
+                "confidence",
+            ]
+        )
         image_id = 0
         for imgs, labels in loader:
             x = imgs.to(device)
@@ -108,7 +122,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data-root", default="data", help="CIFAR-10 root folder")
     ap.add_argument("--batch-size", type=int, default=128)
-    ap.add_argument("--num-images", type=int, default=100, help="subset size (None=all 10k)")
+    ap.add_argument(
+        "--num-images",
+        "--limit",
+        type=int,
+        default=100,
+        help="subset size (None=all 10k)",
+    )
     ap.add_argument(
         "--model-name",
         default="cifar10_resnet20",
@@ -121,7 +141,9 @@ def main():
     device = get_device(args.device)
     model = load_model(args.model_name, device)
     loader = get_loader(
-        args.data_root, args.batch_size, None if args.num_images < 0 else args.num_images
+        args.data_root,
+        args.batch_size,
+        None if args.num_images < 0 else args.num_images,
     )
     metrics = evaluate(model, loader, device, args.out)
 
