@@ -38,7 +38,7 @@ class RISE:
             mb = masks[i : i + self.batch]
             xm = x * mb
             logits = self.model(xm)
-            scores = logits[:, target_class].softmax(dim=1)[:, target_class]
+            scores = logits.softmax(dim=-1)[:, target_class]
             w = scores.view(-1, 1, 1, 1)
             sal += (w * mb).sum(dim=0, keepdim=True)
         sal = sal - sal.min()
