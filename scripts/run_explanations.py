@@ -1,3 +1,4 @@
+# scripts/run_explanations.py
 from __future__ import annotations
 
 import argparse
@@ -16,6 +17,25 @@ from explanations.rise import RISE
 
 CIFAR10_MEAN = [0.4914, 0.4822, 0.4465]
 CIFAR10_STD = [0.2470, 0.2435, 0.2616]
+
+CSV_FIELDS = [
+    "ds_idx",
+    "true",
+    "pred_clean",
+    "pred_adv",
+    "iou10_gc",
+    "iou10_ig",
+    "iou10_rise",
+    "rho_gc",
+    "rho_ig",
+    "rho_rise",
+    "del_auc_gc_clean",
+    "del_auc_ig_clean",
+    "del_auc_rise_clean",
+    "del_auc_gc_adv",
+    "del_auc_ig_adv",
+    "del_auc_rise_adv",
+]
 
 
 def get_device(arg: str | None = None) -> torch.device:
@@ -45,15 +65,8 @@ def get_dataset(data_root: str):
 
 
 def load_adv_image(path: Path):
-    payload = torch.load(path, map_location="cpu")
+    payload = torch.load(path, map_location="cpu", weights_only=True)
     return payload["x"]
-
-
-def save_row(w, rowdict):
-    if w.fieldnames is None:
-        w.fieldnames = list(rowdict.keys())
-        w.writeheader()
-    w.writerow(rowdict)
 
 
 def main():  # noqa: PLR0915
@@ -88,7 +101,9 @@ def main():  # noqa: PLR0915
 
     os.makedirs(Path(args.out).parent, exist_ok=True)
     with open(args.out, "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=None)
+        w = csv.DictWriter(f, fieldnames=CSV_FIELDS)
+        w.writeheader()
+
         for ds_idx in indices:
             x, y = ds[ds_idx]
             x = x.unsqueeze(0).to(device)
@@ -103,7 +118,24 @@ def main():  # noqa: PLR0915
             ig_clean = ig.generate(x, target_class)
             rise_clean = rise.generate(x, target_class)
 
-            row = {"ds_idx": ds_idx, "true": int(y), "pred_clean": pred_clean}
+            row = {
+                "ds_idx": ds_idx,
+                "true": int(y),
+                "pred_clean": pred_clean,
+                "pred_adv": "",
+                "iou10_gc": "",
+                "iou10_ig": "",
+                "iou10_rise": "",
+                "rho_gc": "",
+                "rho_ig": "",
+                "rho_rise": "",
+                "del_auc_gc_clean": deletion_auc(x, gc_clean, model, target_class),
+                "del_auc_ig_clean": deletion_auc(x, ig_clean, model, target_class),
+                "del_auc_rise_clean": deletion_auc(x, rise_clean, model, target_class),
+                "del_auc_gc_adv": "",
+                "del_auc_ig_adv": "",
+                "del_auc_rise_adv": "",
+            }
 
             if args.adv_dir:
                 adv_path = Path(args.adv_dir) / f"{ds_idx}.pt"
@@ -125,41 +157,12 @@ def main():  # noqa: PLR0915
                             "rho_gc": spearman_r(gc_clean, gc_adv),
                             "rho_ig": spearman_r(ig_clean, ig_adv),
                             "rho_rise": spearman_r(rise_clean, rise_adv),
-                            "del_auc_gc_clean": deletion_auc(x, gc_clean, model, target_class),
                             "del_auc_gc_adv": deletion_auc(x_adv, gc_adv, model, target_class),
-                            "del_auc_ig_clean": deletion_auc(x, ig_clean, model, target_class),
                             "del_auc_ig_adv": deletion_auc(x_adv, ig_adv, model, target_class),
-                            "del_auc_rise_clean": deletion_auc(x, rise_clean, model, target_class),
                             "del_auc_rise_adv": deletion_auc(x_adv, rise_adv, model, target_class),
                         }
                     )
-                else:
-                    row.update(
-                        {
-                            "pred_adv": "",
-                            "iou10_gc": "",
-                            "iou10_ig": "",
-                            "iou10_rise": "",
-                            "rho_gc": "",
-                            "rho_ig": "",
-                            "rho_rise": "",
-                            "del_auc_gc_clean": deletion_auc(x, gc_clean, model, target_class),
-                            "del_auc_ig_clean": deletion_auc(x, ig_clean, model, target_class),
-                            "del_auc_rise_clean": deletion_auc(x, rise_clean, model, target_class),
-                        }
-                    )
-            else:
-                row.update(
-                    {
-                        "del_auc_gc_clean": deletion_auc(x, gc_clean, model, target_class),
-                        "del_auc_ig_clean": deletion_auc(x, ig_clean, model, target_class),
-                        "del_auc_rise_clean": deletion_auc(x, rise_clean, model, target_class),
-                    }
-                )
 
-            if w.fieldnames is None:
-                w.fieldnames = list(row.keys())
-                w.writeheader()
             w.writerow(row)
 
     gc.close()
