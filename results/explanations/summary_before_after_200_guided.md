@@ -17,6 +17,6 @@
 
 ## Deletion AUC
 
-- **GC**: clean mean **0.307**, adv mean **0.108**, Δ (adv-clean) mean **-0.118** (medians: clean **0.264**, adv **0.075**, Δ **-0.083**)
-- **IG**: clean mean **0.256**, adv mean **0.186**, Δ (adv-clean) mean **-0.011** (medians: clean **0.197**, adv **0.161**, Δ **-0.015**)
-- **RISE**: clean mean **0.251**, adv mean **0.101**, Δ (adv-clean) mean **-0.066** (medians: clean **0.202**, adv **0.030**, Δ **-0.059**)
+- **GC**: clean mean **0.307**, adv mean **0.108**, Δ (adv−clean) mean **-0.118** (medians: clean **0.264**, adv **0.075**, Δ **-0.083**)
+- **IG**: clean mean **0.256**, adv mean **0.186**, Δ (adv−clean) mean **-0.011** (medians: clean **0.197**, adv **0.161**, Δ **-0.015**)
+- **RISE**: clean mean **0.251**, adv mean **0.101**, Δ (adv−clean) mean **-0.066** (medians: clean **0.202**, adv **0.030**, Δ **-0.059**)
