@@ -1,4 +1,3 @@
-# scripts/run_one_pixel.py
 from __future__ import annotations
 
 import argparse
@@ -13,16 +12,21 @@ from torch.utils.data import DataLoader, Subset
 from torchvision import datasets
 from tqdm import tqdm
 
-# Attacks
 from attacks.one_pixel_de import AttackParams, OnePixelDEAttack
 from attacks.one_pixel_de_guided import OnePixelDERISEGuided, RiseGuideParams
 from attacks.one_pixel_de_mt import MTParams, OnePixelDEMultiTarget
-# Priors
 from explanations.grad_cam_multi import GradCAMMulti
 from explanations.input_grad_prior import sumtarget_inputgrad
-from scripts._common import (MEAN, STD, cifar10_preprocess, get_device,
-                             iter_first_correct, load_cifar10_model,
-                             read_indices_file, set_seeds)
+from scripts._common import (
+    MEAN,
+    STD,
+    cifar10_preprocess,
+    get_device,
+    iter_first_correct,
+    load_cifar10_model,
+    read_indices_file,
+    set_seeds,
+)
 
 
 def git_commit_short() -> str:

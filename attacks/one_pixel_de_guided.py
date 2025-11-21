@@ -5,8 +5,13 @@ from dataclasses import dataclass
 import torch
 import torch.nn.functional as F
 
-from attacks.one_pixel_de import (_CHANNELS, _TENSOR_NDIMS, AttackParams,
-                                  AttackResult, OnePixelDEAttack)
+from attacks.one_pixel_de import (
+    _CHANNELS,
+    _TENSOR_NDIMS,
+    AttackParams,
+    AttackResult,
+    OnePixelDEAttack,
+)
 from explanations.rise import RISE
 
 
