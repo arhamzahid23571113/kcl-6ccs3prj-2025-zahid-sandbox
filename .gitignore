@@ -58,3 +58,20 @@ data/*
 *.toc
 report/build/
 report/main.pdf
+
+# macOS metadata (often created when copying from macOS)
+._*
+.DS_Store
+
+# local envs
+.venv/
+venv/
+
+# caches
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# large run artifacts (don’t commit tensors/logs)
+results/adv_tensors/
+results/logs/

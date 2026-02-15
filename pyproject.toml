@@ -17,3 +17,7 @@ kcl-sum-targeted = "scripts.summarize_targeted_any:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["attacks", "explanations", "scripts"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
