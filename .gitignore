@@ -1,17 +1,16 @@
-# macOS
 .DS_Store
+._*
 Thumbs.db
 
-# Editors
 .vscode/
 .idea/
 
-# Python
 __pycache__/
 *.py[cod]
 *.so
 .venv/
 .venv*/
+venv/
 *.egg-info/
 .eggs/
 .pytest_cache/
@@ -20,38 +19,31 @@ __pycache__/
 .ipynb_checkpoints/
 .cache/
 
-# Env files
 .env
 *.env
 
-# Node/JS (if used)
 node_modules/
 
-# Build / Dist / Docs sites
 dist/
 build/
 site/
 
-# Coverage
 .coverage
 .coverage.*
 coverage.xml
 htmlcov/
 
-# Logs
 *.log
 
-# Data (keep instructions README only)
 data/*
 !data/README.md
-# LaTeX
+
 *.aux
 *.bbl
 *.bcf
 *.blg
 *.fdb_latexmk
 *.fls
-*.log
 *.out
 *.run.xml
 *.synctex.gz
@@ -59,6 +51,8 @@ data/*
 report/build/
 report/main.pdf
 
-# local smoke artifacts (do not commit)
 results/adv_tensors/_smoke_guided/
 results/attacks/_smoke_guided.csv
+
+results/adv_tensors/
+results/logs/
