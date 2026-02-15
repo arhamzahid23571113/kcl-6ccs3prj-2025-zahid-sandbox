@@ -58,3 +58,7 @@ data/*
 *.toc
 report/build/
 report/main.pdf
+
+# local smoke artifacts (do not commit)
+results/adv_tensors/_smoke_guided/
+results/attacks/_smoke_guided.csv
