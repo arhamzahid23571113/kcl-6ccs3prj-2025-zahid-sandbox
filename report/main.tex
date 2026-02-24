@@ -1,5 +1,6 @@
 \documentclass[11pt,a4paper]{article}
 \input{preamble}
+
 \usepackage[backend=biber,style=ieee]{biblatex}
 \addbibresource{bib/refs.bib}
 
@@ -14,12 +15,19 @@
 % Write your abstract here.
 \end{abstract}
 
-\section{Introduction}
-\input{sections/introduction}
+\tableofcontents
+\newpage
 
-\
-ocite{*}
-printbibliography
+\input{sections/introduction}
+\input{sections/background}
+\input{sections/method}
+\input{sections/implementation}
 \input{sections/evaluation}
+\input{sections/conclusion}
+\input{sections/professional_issues}
+
+% Temporary while drafting: include all bibliography entries. Remove before final submission.
+\nocite{*}
+\printbibliography
 
 \end{document}
