@@ -1,19 +1,20 @@
 \section{Evaluation}
 \label{sec:evaluation}
 
-This chapter answers the research questions using the frozen results pack in \texttt{results/final\_pack/}.
+This chapter answers the research questions using the frozen results pack in \texttt{results/final\_pack/} and the report-ready imports under \texttt{report/figures/final\_pack/}.
 
 \subsection{Experimental setup}
-% TODO: Dataset (CIFAR-10 test), model, threat model, success definition, eligible set (9213/10000),
-% compute (A100 GPU), seeds, and metrics (ASR, queries, IoU@10, Spearman rho, deletion AUC).
+% TODO: dataset (CIFAR-10 test), indices 0..9999, eligible set = 9,213 images (clean-correct),
+% model, threat model, attacks, and metrics.
 
 \subsection{RQ1: How do successful one-pixel attacks affect explanations?}
 % Use: results/final_pack/summary_before_after_10000_untargeted_gpu.md
-% TODO: Summarize method-wise stability changes (Grad-CAM, IG, RISE) among successful adversarials.
+% TODO: Summarize method-wise stability changes (Grad-CAM, IG, RISE).
 
 \subsection{RQ2: Can responsibility-map guidance improve one-pixel attacks?}
+
 \subsubsection{Effectiveness and query cost}
-% Use: results/final_pack/tables/attack_summary.md and rq2_metrics_table.md
+\input{tables/final_pack/rq2_attack_summary}
 
 \begin{figure}[t]
   \centering
@@ -30,6 +31,9 @@ This chapter answers the research questions using the frozen results pack in \te
 \end{figure}
 
 \subsubsection{Explanation stability among successful adversarials}
+\input{tables/final_pack/rq2_stability_means}
+\input{tables/final_pack/rq2_del_delta_means}
+
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.85\linewidth]{figures/final_pack/rq2_iou10_adv_mean.png}
@@ -51,8 +55,5 @@ This chapter answers the research questions using the frozen results pack in \te
   \label{fig:rq2_delauc_delta}
 \end{figure}
 
-% Use: results/final_pack/summary_compare_10000_untargeted_fastprior_rise_guided_gpu_v4.md
-% TODO: Interpret trade-offs and connect to RQ2 hypothesis.
-
 \subsection{Discussion and limitations}
-% TODO: What guidance changes, what it doesn't, threat model limits, generalization, and runtime cost.
+% TODO: threat-model limits, generalization, runtime, and reproducibility.

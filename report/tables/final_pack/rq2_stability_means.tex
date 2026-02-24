@@ -1,0 +1,19 @@
+\begin{table}[t]
+\centering
+\small
+\resizebox{\linewidth}{!}{%
+\begin{minipage}{\linewidth}
+\caption{RQ2 explanation stability on successful adversarial examples (means). Higher IoU@10 and Spearman indicate more stable explanations.}
+\label{tab:rq2_stability_means}
+\begin{tabular}{lrrrrrr}
+\toprule
+Run & IoU@10 GC & IoU@10 IG & IoU@10 RISE & Spearman GC & Spearman IG & Spearman RISE \\
+\midrule
+untargeted & 0.326 & 0.485 & 0.322 & 0.695 & 0.842 & 0.477 \\
+fastprior & 0.517 & 0.532 & 0.367 & 0.839 & 0.866 & 0.525 \\
+rise-guided & 0.325 & 0.484 & 0.296 & 0.693 & 0.842 & 0.445 \\
+\bottomrule
+\end{tabular}
+
+\end{minipage}}
+\end{table}
