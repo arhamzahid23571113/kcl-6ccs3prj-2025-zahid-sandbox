@@ -4,8 +4,12 @@
 This chapter answers the research questions using the frozen results pack in \texttt{results/final\_pack/} and the report-ready imports under \texttt{report/figures/final\_pack/}.
 
 \subsection{Experimental setup}
-% TODO: dataset (CIFAR-10 test), indices 0..9999, eligible set = 9,213 images (clean-correct),
-% model, threat model, attacks, and metrics.
+All experiments use the CIFAR-10 test set and a fixed index set of 10{,}000 images (indices 0--9{,}999). An image is considered \emph{eligible} if it is classified correctly by the clean model; this yields 9{,}213 eligible images. The threat model is black-box and restricted to a single-pixel perturbation: an adversarial example differs from the clean input at exactly one $(x,y)$ location and may change all three RGB channel values at that pixel.
+
+The baseline attack is an untargeted one-pixel Differential Evolution (DE) search. Two guidance variants are evaluated for RQ2: (i) a fastprior variant that uses a fixed-budget multi-target DE configuration, and (ii) a responsibility-map guided DE variant that uses a black-box saliency prior derived from RISE to bias pixel selection/mutation. Attacks are evaluated by image-wise success rate (ASR) on the eligible set and by query cost (number of model evaluations), summarised using medians over all trials and over successful trials.
+
+For RQ1/RQ2 explanation analysis, three explainers are computed: Grad-CAM, Integrated Gradients (IG), and RISE. Stability is measured on successful adversarial examples using IoU@10 (overlap of the top-$k$ salient pixels with $k=10$) and Spearman rank correlation $\rho$ between attribution maps before vs after the attack. Faithfulness is assessed via deletion AUC, reported for clean and adversarial inputs and as the difference (adversarial minus clean).
+
 
 \subsection{RQ1: How do successful one-pixel attacks affect explanations?}
 
@@ -37,9 +41,6 @@ Overall, successful one-pixel perturbations are associated with reduced faithful
   \caption{RQ1: Mean change in deletion AUC (adversarial minus clean) on successful adversarial examples.}
   \label{fig:rq1_delauc_delta}
 \end{figure}
-
-% Use: results/final_pack/summary_before_after_10000_untargeted_gpu.md
-% TODO: Summarize method-wise stability changes (Grad-CAM, IG, RISE).
 
 \subsection{RQ2: Can responsibility-map guidance improve one-pixel attacks?}
 
@@ -102,4 +103,6 @@ These results suggest that guidance can change the composition of successful adv
 
 
 \subsection{Discussion and limitations}
-% TODO: threat-model limits, generalization, runtime, and reproducibility.
+Two themes emerge. First, explanation behaviour under successful one-pixel attacks is method-dependent: IG is consistently more stable than Grad-CAM and RISE, while all explainers show reduced deletion-based faithfulness on successful adversarials (RQ1). Second, responsibility-map guidance changes trade-offs rather than uniformly improving outcomes (RQ2): in the evaluated configuration, RISE-guided DE does not increase ASR over the unguided baseline, but it shifts the median query cost among successes and alters stability metrics for the RISE explainer.
+
+These results are conditioned on the specific threat model (single-pixel, black-box) and the chosen model and dataset. The fastprior configuration uses a fixed budget, which makes its query cost less comparable to adaptive stopping strategies. Explanation metrics are computed only on successful adversarial examples and therefore reflect the distribution of successes; changes in stability can arise either from different perturbations or from selection effects. Finally, while the results are frozen and reproducible via the provided scripts and the final results pack, broader generalisation (e.g., to other architectures, datasets, or multi-pixel perturbations) is out of scope for this evaluation.
