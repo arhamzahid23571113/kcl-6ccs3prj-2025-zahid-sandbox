@@ -16,6 +16,28 @@ RISE shows the lowest rank-stability (mean $\rho$ of 0.477) and comparable IoU@1
 Faithfulness measured by deletion AUC decreases under successful attacks for all explainers: the mean change (adversarial minus clean) is negative for Grad-CAM (-0.103), IG (-0.027), and RISE (-0.095).
 Overall, successful one-pixel perturbations are associated with reduced faithfulness and method-dependent explanation stability, with IG most stable under this evaluation protocol.
 
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.85\linewidth]{figures/final_pack/rq1_iou10_adv_mean.png}
+  \caption{RQ1: Mean IoU@10 on successful adversarial examples (higher indicates more stable explanations).}
+  \label{fig:rq1_iou10}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.85\linewidth]{figures/final_pack/rq1_rho_adv_mean.png}
+  \caption{RQ1: Mean Spearman rank correlation on successful adversarial examples.}
+  \label{fig:rq1_rho}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.85\linewidth]{figures/final_pack/rq1_del_auc_delta_mean.png}
+  \caption{RQ1: Mean change in deletion AUC (adversarial minus clean) on successful adversarial examples.}
+  \label{fig:rq1_delauc_delta}
+\end{figure}
+
 % Use: results/final_pack/summary_before_after_10000_untargeted_gpu.md
 % TODO: Summarize method-wise stability changes (Grad-CAM, IG, RISE).
 
