@@ -1,0 +1,58 @@
+\section{Evaluation}
+\label{sec:evaluation}
+
+This chapter answers the research questions using the frozen results pack in \texttt{results/final\_pack/}.
+
+\subsection{Experimental setup}
+% TODO: Dataset (CIFAR-10 test), model, threat model, success definition, eligible set (9213/10000),
+% compute (A100 GPU), seeds, and metrics (ASR, queries, IoU@10, Spearman rho, deletion AUC).
+
+\subsection{RQ1: How do successful one-pixel attacks affect explanations?}
+% Use: results/final_pack/summary_before_after_10000_untargeted_gpu.md
+% TODO: Summarize method-wise stability changes (Grad-CAM, IG, RISE) among successful adversarials.
+
+\subsection{RQ2: Can responsibility-map guidance improve one-pixel attacks?}
+\subsubsection{Effectiveness and query cost}
+% Use: results/final_pack/tables/attack_summary.md and rq2_metrics_table.md
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.85\linewidth]{figures/final_pack/rq2_asr_image_percent.png}
+  \caption{Image-wise attack success rate (ASR) on the 9{,}213 eligible CIFAR-10 test images.}
+  \label{fig:rq2_asr}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.85\linewidth]{figures/final_pack/rq2_queries_median_success.png}
+  \caption{Median query cost among successful attacks (lower is better).}
+  \label{fig:rq2_queries_succ}
+\end{figure}
+
+\subsubsection{Explanation stability among successful adversarials}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.85\linewidth]{figures/final_pack/rq2_iou10_adv_mean.png}
+  \caption{Mean IoU@10 of explanation maps on successful adversarial examples (higher indicates more stable explanations).}
+  \label{fig:rq2_iou10}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.85\linewidth]{figures/final_pack/rq2_rho_adv_mean.png}
+  \caption{Mean Spearman rank correlation of attribution values on successful adversarial examples.}
+  \label{fig:rq2_rho}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.85\linewidth]{figures/final_pack/rq2_del_auc_delta_mean.png}
+  \caption{Mean change in deletion AUC (adversarial minus clean) on successful adversarial examples.}
+  \label{fig:rq2_delauc_delta}
+\end{figure}
+
+% Use: results/final_pack/summary_compare_10000_untargeted_fastprior_rise_guided_gpu_v4.md
+% TODO: Interpret trade-offs and connect to RQ2 hypothesis.
+
+\subsection{Discussion and limitations}
+% TODO: What guidance changes, what it doesn't, threat model limits, generalization, and runtime cost.
