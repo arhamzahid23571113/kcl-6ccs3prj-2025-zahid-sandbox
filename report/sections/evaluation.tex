@@ -30,6 +30,14 @@ This chapter answers the research questions using the frozen results pack in \te
   \label{fig:rq2_queries_succ}
 \end{figure}
 
+\paragraph{Effectiveness and query cost.}
+Table~\ref{tab:rq2_attack_summary} and Figures~\ref{fig:rq2_asr}--\ref{fig:rq2_queries_succ} summarise the trade-off between image-wise success rate (ASR) and query cost on the 9{,}213 eligible CIFAR-10 test images.
+The unguided untargeted DE baseline achieves an ASR of 0.3774 (3{,}477/9{,}213) with a median successful query cost of 6{,}000 and a median query cost of 40{,}400 over all images.
+The fastprior variant reduces ASR to 0.1422 (1{,}310/9{,}213) and is substantially more expensive in this configuration, with median query cost 70{,}848 (both overall and among successes), reflecting its fixed-budget design.
+The RISE-guided variant achieves the same ASR as the unguided baseline (0.3774; 3{,}477/9{,}213) but changes the cost profile among successes: the median successful query cost increases from 6{,}000 to 6{,}400, while the overall median remains 40{,}400.
+Overall, the evaluated responsibility-map guidance does not improve ASR over the unguided baseline at 10k scale, but it does measurably shift the ASR--cost trade-off relative to both baselines.
+
+
 \subsubsection{Explanation stability among successful adversarials}
 \input{tables/final_pack/rq2_stability_means}
 \input{tables/final_pack/rq2_del_delta_means}
@@ -54,6 +62,14 @@ This chapter answers the research questions using the frozen results pack in \te
   \caption{Mean change in deletion AUC (adversarial minus clean) on successful adversarial examples.}
   \label{fig:rq2_delauc_delta}
 \end{figure}
+
+\paragraph{Explanation stability among successful adversarials.}
+Table~\ref{tab:rq2_stability_means}, Table~\ref{tab:rq2_del_delta}, and Figures~\ref{fig:rq2_iou10}--\ref{fig:rq2_delauc_delta} compare explanation stability and faithfulness metrics computed on successful adversarial examples.
+Across all runs, Integrated Gradients (IG) exhibits higher rank-stability than Grad-CAM and RISE (mean Spearman $\rho\approx 0.842$ for untargeted and 0.866 for fastprior), while RISE shows the lowest stability.
+Comparing unguided vs RISE-guided successes, Grad-CAM and IG are essentially unchanged (e.g., IoU@10 for Grad-CAM: 0.3260 vs 0.3255; Spearman for IG: 0.8420 vs 0.8420), whereas RISE stability decreases under guidance (IoU@10: 0.3223 to 0.2962; Spearman: 0.4772 to 0.4454).
+Deletion-based faithfulness degrades under successful attacks for all methods (negative $\Delta$ deletion AUC), with the magnitude depending on the explanation method and run (e.g., Grad-CAM $\Delta$ delAUC: -0.1730 untargeted, -0.1728 RISE-guided; RISE $\Delta$ delAUC: -0.1647 untargeted, -0.1588 RISE-guided).
+These results suggest that guidance can change the composition of successful adversarials in ways that affect explanation stability (particularly for the RISE explainer), even when headline ASR is unchanged.
+
 
 \subsection{Discussion and limitations}
 % TODO: threat-model limits, generalization, runtime, and reproducibility.
