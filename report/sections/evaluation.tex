@@ -8,6 +8,14 @@ This chapter answers the research questions using the frozen results pack in \te
 % model, threat model, attacks, and metrics.
 
 \subsection{RQ1: How do successful one-pixel attacks affect explanations?}
+
+\paragraph{RQ1: Explanation stability under successful one-pixel attacks.}
+We analyse how explanation maps change under successful one-pixel adversarial examples using three explainers (Grad-CAM, Integrated Gradients, and RISE) and stability metrics computed on the successful subset (3{,}477 adversarial examples out of 10{,}000 indices).
+Across explainers, Integrated Gradients exhibits the highest stability, with mean IoU@10 of 0.485 and mean Spearman $\rho$ of 0.842, while Grad-CAM achieves mean IoU@10 of 0.326 and mean $\rho$ of 0.695.
+RISE shows the lowest rank-stability (mean $\rho$ of 0.477) and comparable IoU@10 to Grad-CAM (0.322), consistent with its stochastic masking mechanism.
+Faithfulness measured by deletion AUC decreases under successful attacks for all explainers: the mean change (adversarial minus clean) is negative for Grad-CAM (-0.103), IG (-0.027), and RISE (-0.095).
+Overall, successful one-pixel perturbations are associated with reduced faithfulness and method-dependent explanation stability, with IG most stable under this evaluation protocol.
+
 % Use: results/final_pack/summary_before_after_10000_untargeted_gpu.md
 % TODO: Summarize method-wise stability changes (Grad-CAM, IG, RISE).
 
