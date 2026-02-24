@@ -1,0 +1,11 @@
+| run         | method   |   n_adv | mean_iou10   | mean_spearman   | mean_delauc_before   | mean_delauc_after   | mean_delauc_delta   |
+|-------------|----------|---------|--------------|-----------------|----------------------|---------------------|---------------------|
+| untargeted  | gradcam  |       0 |              |                 |                      |                     |                     |
+| untargeted  | ig       |       0 |              |                 |                      |                     |                     |
+| untargeted  | rise     |       0 |              |                 |                      |                     |                     |
+| fastprior   | gradcam  |       0 |              |                 |                      |                     |                     |
+| fastprior   | ig       |       0 |              |                 |                      |                     |                     |
+| fastprior   | rise     |       0 |              |                 |                      |                     |                     |
+| rise_guided | gradcam  |       0 |              |                 |                      |                     |                     |
+| rise_guided | ig       |       0 |              |                 |                      |                     |                     |
+| rise_guided | rise     |       0 |              |                 |                      |                     |                     |

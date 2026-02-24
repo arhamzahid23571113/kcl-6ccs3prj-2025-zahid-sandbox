@@ -1,0 +1,4 @@
+run,mode,n_rows,n_images,n_success_images,success_rate_images,cost_col,mean_cost_success,median_cost_success,mean_cost_all,median_cost_all,notes
+untargeted,untargeted,9213,9213,3477,0.3774014978834256,queries,19154.673569168823,6000.0,32373.298599804624,40400.0,
+fastprior,untargeted,9213,9213,1310,0.14219038315423857,queries,70848.0,70848.0,70848.0,70848.0,
+rise-guided,untargeted,9213,9213,3477,0.3774014978834256,queries,,6400.0,,40400.0,derived from rq2_metrics_table (medians only)
