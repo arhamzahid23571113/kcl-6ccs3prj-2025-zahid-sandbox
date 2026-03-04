@@ -1,6 +1,34 @@
 \section{Conclusions and future work}
 \label{sec:conclusion}
 
-% TODO:
-% - Summarise RQ1 + RQ2 findings
-% - Limitations and concrete future directions
+This project investigated one-pixel adversarial attacks on image classifiers under a black-box threat model, with two research questions: (RQ1) how successful one-pixel attacks affect explanation stability and deletion-based faithfulness, and (RQ2) whether responsibility-map guidance improves the success--cost trade-off and how it affects explanation stability among successful adversarial examples.
+
+\subsection{Summary of findings}
+
+\textbf{RQ1 (effect on explanations).}
+Across successful one-pixel adversarial examples, explanation stability decreases relative to the clean input for all three methods studied (Grad-CAM, Integrated Gradients, and RISE), and deletion-based faithfulness typically degrades (adversarial minus clean deletion AUC is negative on average).
+Integrated Gradients tends to be the most stable explanation method under this attack, while Grad-CAM and RISE show larger shifts in top-ranked pixels and rank ordering.
+
+\textbf{RQ2 (guidance vs baseline).}
+Three attack configurations were compared at 10k scale: untargeted Differential Evolution (DE), a fast-prior multi-target variant, and RISE-guided DE.
+The untargeted baseline achieves an image-wise success rate of 0.377 on 9,213 eligible images, with median 40,000 queries per image and 6,000 queries per successful attack.
+Fast-prior reduces image-wise success to 0.142 and substantially increases median queries per successful attack (30,000), indicating a worse success--cost frontier under the evaluated settings.
+RISE-guided DE attains the same success rate as untargeted DE (0.377), with similar median queries per image (40,400) and slightly higher median queries per successful attack (6,400), suggesting that simple responsibility-map guidance does not automatically improve efficiency.
+
+Among successful adversarial examples, fast-prior yields higher explanation stability (IoU@10 and Spearman) than the untargeted and RISE-guided runs, while RISE-guided stability is broadly similar to baseline.
+This indicates that the \emph{distribution of successful cases} changes with guidance, which can affect explanation metrics even when the perturbation budget is fixed to a single pixel.
+
+\subsection{Limitations}
+
+The evaluation uses a single dataset (CIFAR-10) and a fixed pretrained architecture, so results may not generalise to higher-resolution datasets, different model families, or other threat models.
+Explanation metrics are computed only on successful adversarial examples; therefore, stability/faithfulness estimates reflect both explanation sensitivity and selection effects induced by the attack configuration.
+
+\subsection{Future work}
+
+Future work can strengthen both the scientific conclusions and the practical utility of guidance:
+\begin{itemize}
+  \item \textbf{Broader model coverage:} replicate on additional CIFAR-10 architectures and at least one higher-resolution dataset to test whether stability trends persist.
+  \item \textbf{Improved guidance mechanisms:} replace the current heuristic integration of saliency with principled priors or hybrid objectives (e.g., multi-objective DE balancing target confidence and saliency alignment).
+  \item \textbf{Query-efficiency analysis:} characterise the full cost distribution (not only medians), including tail behaviour and early-stopping sensitivity.
+  \item \textbf{Robustness and defences:} evaluate whether standard robustness techniques (e.g., adversarial training or input preprocessing) change explanation stability under one-pixel attacks.
+\end{itemize}

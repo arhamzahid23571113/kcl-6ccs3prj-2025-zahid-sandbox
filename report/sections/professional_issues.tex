@@ -1,4 +1,37 @@
-\section{Professional and ethical issues}
-% TODO:
-% - Dual-use nature of adversarial ML research
-% - Responsible disclosure, reproducibility, and risk mitigation
+\section{Awareness of professional issues}
+\label{sec:professional_issues}
+
+This project studies adversarial examples and black-box attack procedures, which have clear dual-use implications.
+Accordingly, professional considerations include ethical use, security impact, reproducibility, licensing, and responsible communication of results.
+
+\subsection{Ethical and security considerations (dual use)}
+
+Adversarial attacks can be used to audit and improve system robustness, but can also enable misuse against deployed machine learning systems.
+Black-box attacks are particularly relevant in practice because they do not require access to model parameters \cite{papernot2017practical}.
+The report therefore focuses on methodological transparency (threat model, success definitions, and costs) and on outcomes that support defensive understanding, such as how explanation stability changes under attack and whether guidance meaningfully changes the success--cost frontier.
+No attempt is made to target real-world safety-critical deployments; experiments are limited to a standard benchmark dataset and a research setting.
+
+\subsection{Data, privacy, and consent}
+
+Experiments use CIFAR-10, a public benchmark dataset commonly used for research \cite{krizhevsky2009cifar}.
+The dataset contains natural images and does not include personal identifiers or sensitive metadata within this project’s use.
+No user data is collected, processed, or stored.
+As a result, privacy and consent risks are minimal for the conducted experiments.
+
+\subsection{Reproducibility and research integrity}
+
+The implementation is structured to support reproducibility: fixed evaluation indices (0--9{,}999), recorded random seeds and hyperparameters in output CSVs, and a frozen results pack that the report imports for tables and figures.
+The report cites all external methods and datasets used (e.g., one-pixel attack framing \cite{su2019onepixel}, DE optimisation \cite{storn1997de}, and explanation methods \cite{selvaraju2017gradcam,sundararajan2017ig,petsiuk2018rise}).
+This aligns with the expectation that external sources must be clearly acknowledged and consistently referenced \cite{goodfellow2015explaining}.
+
+\subsection{Compute, sustainability, and resource use}
+
+The 10k-scale runs require significant compute.
+To reduce unnecessary cost, the project uses early stopping, fixed runs, and avoids repeated large-scale recomputation by freezing artefacts used in the report.
+GPU resources are used for efficiency, but the report emphasises careful experiment planning and reuse of outputs to minimise additional compute.
+
+\subsection{Licensing and third-party software}
+
+The project relies on widely used open-source tooling (Python, PyTorch, and standard scientific libraries).
+Third-party code is treated as an external dependency and is not presented as original work.
+Where applicable, versions and configuration choices are recorded to support repeatability and attribution.
