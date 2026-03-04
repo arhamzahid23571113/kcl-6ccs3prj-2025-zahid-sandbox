@@ -42,7 +42,13 @@ I confirm that this report is my own work. Where the work of others has been use
 
 \section*{Abstract}
 \addcontentsline{toc}{section}{Abstract}
-% TODO: 150--250 words: problem, method, key results (RQ1 + RQ2), conclusion.
+One-pixel attacks illustrate that image classifiers can be fooled in a black-box setting by perturbing a single pixel.
+This project revisits the Differential Evolution (DE) one-pixel attack on a pretrained CIFAR-10 classifier and studies how successful attacks affect post-hoc explanations.
+For RQ1, explanation stability between clean and adversarial inputs is measured using IoU@10 and Spearman rank correlation, and explanation faithfulness is assessed via deletion AUC.
+Across successful attacks, stability typically decreases and deletion AUC tends to degrade; Integrated Gradients is generally more stable than Grad-CAM and RISE under one-pixel perturbations.
+For RQ2, two guidance strategies are evaluated: a fast-prior targeted variant and a responsibility-map guided DE that uses RISE saliency to bias mutation.
+At 10k scale (9,213 eligible images), untargeted DE achieves 37.7\% image-wise success with a worst-case budget of 40,400 queries per image; fast-prior reduces success to 14.2\% but increases stability among successful cases, while RISE-guided DE matches the untargeted success rate at similar cost, indicating that simple saliency guidance does not necessarily improve the success--cost trade-off.
+All reported numbers, plots, and tables are generated from a frozen results pack to ensure reproducibility.
 
 \clearpage
 
