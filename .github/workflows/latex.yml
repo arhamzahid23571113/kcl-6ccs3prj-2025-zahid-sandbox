@@ -16,7 +16,7 @@ jobs:
           root_file: main.tex
           latexmk_use_lualatex: false
           extra_system_packages: biber
-          pre_compile: tlmgr option repository ftp://tug.org/historic/systems/texlive/2025/tlnet-final && tlmgr update --self && tlmgr install biblatex csquotes microtype cleveref
+          pre_compile: tlmgr option repository https://ftp.tug.org/historic/systems/texlive/2025/tlnet-final && && tlmgr install biblatex csquotes microtype cleveref
       - uses: actions/upload-artifact@v4
         with:
           name: report-pdf
