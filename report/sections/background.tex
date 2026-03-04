@@ -1,0 +1,47 @@
+\section{Background and related work}
+\label{sec:background}
+
+This chapter situates the project in the literature on adversarial examples, black-box attacks, and explanation methods.
+It introduces the core concepts needed for \Cref{sec:method} and the evaluation in \Cref{sec:evaluation}.
+
+\subsection{Adversarial examples and black-box threats}
+Adversarial examples are inputs obtained by applying small, carefully chosen perturbations that cause a trained model to produce an incorrect prediction.
+Early work demonstrated that such perturbations exist broadly for neural networks and can transfer across models \cite{szegedy2014intriguing,goodfellow2015explaining}.
+In security-relevant settings, the attacker may not have access to model parameters and must operate in a black-box regime, using only queries to observe model outputs.
+Practical black-box attacks can leverage query feedback and/or transferability to craft adversarial examples without gradient access \cite{papernot2017practical}.
+
+In this report, the threat model is intentionally constrained: the perturbation budget is limited to a \emph{single pixel}, and the attacker is black-box (query-only).
+Although the perturbation is sparse, the attack can still succeed by exploiting the model's sensitivity to local changes in the input space \cite{su2019onepixel}.
+
+\subsection{One-pixel attacks and differential evolution}
+The one-pixel attack of Su et al.\ \cite{su2019onepixel} formulates adversarial search as an optimisation problem over a low-dimensional parameterisation: a pixel location $(x,y)$ and RGB values $(r,g,b)$.
+Because the attacker is black-box, gradient-based optimisation is not directly available.
+Instead, the search can be driven by derivative-free optimisation methods.
+
+This project uses Differential Evolution (DE) \cite{storn1997de} as the baseline optimisation strategy.
+DE maintains a population of candidate solutions and iteratively proposes new candidates through mutation and crossover of existing solutions.
+The method is attractive for the one-pixel setting because (i) it does not require gradients, (ii) it can explore a non-convex objective landscape, and (iii) it naturally supports bounded continuous variables such as colour intensities.
+
+\subsection{Responsibility maps and guidance priors}
+A key idea explored in this project is to use a \emph{responsibility map}---a per-pixel saliency distribution indicating which pixels are most influential for the model's decision---to guide the search.
+Intuitively, if only one pixel may be changed, selecting pixels that are already important for the prediction should increase the chance that a single change can alter the decision.
+This idea can be implemented as a spatial prior that biases which $(x,y)$ locations are sampled or mutated during the DE search.
+
+In this work, the responsibility map is computed in a black-box manner using RISE \cite{petsiuk2018rise}.
+Because RISE estimates saliency via random masking and model queries, it aligns with the black-box constraint and provides a distribution that can be reused as a guidance prior during attack optimisation.
+
+\subsection{Explanation methods for analysis}
+Beyond measuring attack success, the project analyses how explanations change under successful one-pixel perturbations.
+Three explanation methods are used, chosen to represent common paradigms:
+\begin{itemize}
+  \item \textbf{Grad-CAM} produces a coarse localisation map by weighting feature maps using gradients in a chosen convolutional layer \cite{selvaraju2017gradcam}.
+  \item \textbf{Integrated Gradients (IG)} attributes feature importance by integrating gradients along a path from a baseline input to the given input \cite{sundararajan2017ig}.
+  \item \textbf{RISE} estimates pixel importance in a black-box setting by aggregating model responses to randomly masked inputs \cite{petsiuk2018rise}.
+\end{itemize}
+These methods differ in their assumptions (white-box vs black-box), spatial resolution, and stochasticity, which can affect stability and faithfulness measures under adversarial perturbations.
+
+\subsection{Positioning and scope}
+The report addresses two research questions.
+RQ1 quantifies how explanations (Grad-CAM, IG, and RISE) change under successful one-pixel attacks, using stability and deletion-based faithfulness metrics.
+RQ2 evaluates whether responsibility-map guidance can improve the one-pixel attack trade-off (success rate vs query cost) and how guidance affects explanation stability among successful adversarial examples.
+All experiments are conducted on CIFAR-10 \cite{krizhevsky2009cifar} with a fixed 10k index set, using frozen artefacts for reproducibility.

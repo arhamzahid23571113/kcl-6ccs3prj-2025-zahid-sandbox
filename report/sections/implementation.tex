@@ -1,0 +1,82 @@
+\section{Implementation}
+\label{sec:implementation}
+
+This chapter describes the project artefacts and the implementation pipeline used to generate the frozen results pack and the report-ready figures and tables referenced in \Cref{sec:evaluation}.
+
+\subsection{Repository structure}
+The implementation is organised to separate attacks, explanations, experiment scripts, and report artefacts:
+\begin{itemize}
+  \item \texttt{scripts/}: command-line entry points for running attacks, computing explanations, summarising results, and generating report-ready outputs.
+  \item \texttt{attacks/}: reusable attack components (e.g., DE-based one-pixel search variants).
+  \item \texttt{explanations/}: explainer implementations and supporting utilities for Grad-CAM, IG, and RISE.
+  \item \texttt{results/}: experiment outputs (CSVs, logs, plots) and the frozen results pack under \texttt{results/final\_pack/}.
+  \item \texttt{report/}: the \LaTeX{} report, with imported figures under \texttt{report/figures/final\_pack/} and imported tables under \texttt{report/tables/final\_pack/}.
+\end{itemize}
+
+\subsection{Attack pipeline}
+Attacks are executed via a single runner that loads the CIFAR-10 model, filters to the eligible set (correctly classified images), and performs one-pixel optimisation according to the chosen mode.
+The runner outputs a CSV per run containing per-image records, including: dataset index, clean prediction and confidence, success flags, generations used, query count, and the best one-pixel parameters $(x,y,r,g,b)$ (for untargeted runs) or per-target summaries (for multi-target runs).
+
+For the frozen 10k experiments used in \Cref{sec:evaluation}:
+\begin{itemize}
+  \item Untargeted DE outputs are stored as \texttt{results/attacks/de1px\_untargeted\_10000.csv}.
+  \item Fastprior multi-target outputs are stored as \texttt{results/attacks/de1px\_targeted\_fastprior\_10000.csv}.
+\end{itemize}
+Optional adversarial tensors are saved to \texttt{results/adv\_tensors/} to support downstream explanation computation without rerunning the attack.
+
+\subsection{Explanation pipeline}
+Explanations are computed using a dedicated script that loads clean inputs and (when available) the corresponding adversarial tensors for the same index.
+For each index, it computes Grad-CAM, Integrated Gradients, and RISE on the clean and adversarial inputs and writes a single “before vs after” CSV.
+
+For the frozen 10k runs, the main explanation artefacts are:
+\begin{itemize}
+  \item \texttt{results/explanations/before\_after\_10000\_untargeted\_gpu.csv}
+  \item \texttt{results/explanations/before\_after\_10000\_fastprior\_gpu.csv}
+  \item \texttt{results/final\_pack/before\_after\_10000\_rise\_guided\_gpu.csv}
+\end{itemize}
+These files are the inputs to the stability and faithfulness computations reported in \Cref{sec:evaluation}.
+
+\subsection{Summaries, plots, and report-ready exports}
+To support both analysis and report writing, the repository includes scripts that aggregate the raw CSV outputs into human-readable summaries, plots, and \LaTeX{} tables.
+
+\paragraph{Comparative summaries.}
+A comparison script produces a single Markdown summary comparing explanation metrics across multiple runs (including the fastprior encoding via \texttt{hit\_mask}).
+The frozen comparison narrative used to support RQ2 is stored as:
+\begin{itemize}
+  \item \texttt{results/final\_pack/summary\_compare\_10000\_untargeted\_fastprior\_rise\_guided\_gpu\_v4.md}
+\end{itemize}
+
+\paragraph{Plots and metrics tables.}
+The RQ2 “story and plots” pipeline writes:
+\begin{itemize}
+  \item \texttt{results/final\_pack/rq2\_metrics\_table.csv}
+  \item \texttt{results/final\_pack/story\_rq2\_guidance\_tradeoff.md}
+\end{itemize}
+and generates the report figures that are copied into \texttt{report/figures/final\_pack/}.
+
+\paragraph{\LaTeX{} tables.}
+A report-table script converts the frozen CSV metrics into compact \LaTeX{} tables under \texttt{report/tables/final\_pack/}, including:
+\texttt{rq2\_attack\_summary.tex}, \texttt{rq2\_stability\_means.tex}, and \texttt{rq2\_del\_delta\_means.tex}.
+These are included directly from \Cref{sec:evaluation}.
+
+\subsection{Frozen results pack and evidence mapping}
+All reported numbers in \Cref{sec:evaluation} are derived from a frozen results pack under \texttt{results/final\_pack/}.
+This directory contains the key CSVs, logs, plots, and a short evidence map:
+\begin{itemize}
+  \item \texttt{results/final\_pack/README.md} describing contents,
+  \item \texttt{results/final\_pack/CLAIMS\_EVIDENCE.md} mapping claims to artefacts.
+\end{itemize}
+Freezing the pack avoids accidental drift in results while iterating on the report and enables consistent regeneration of the report-ready figures and tables.
+
+\subsection{Reproducibility considerations}
+The pipeline is designed to be reproducible:
+\begin{itemize}
+  \item The evaluated image set is fixed (indices 0--9{,}999) and eligibility is determined by the clean model.
+  \item Random seeds are fixed for the frozen runs (seed 1337 as recorded in run outputs).
+  \item Attack outputs record the configuration parameters (e.g., population size, $F$, $Cr$, generations, and early stopping thresholds) alongside results.
+  \item The report imports only frozen artefacts (tables/figures) produced from the final pack.
+\end{itemize}
+
+\subsection{Hardware and software}
+Development and report writing are performed on a macOS workstation, while the 10k-scale runs are executed with GPU acceleration (CUDA) on a dedicated compute environment.
+The implementation uses Python and PyTorch, with scripts structured so that the same codepaths can run on CPU or GPU depending on the selected device.

@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\small
+\caption{RQ2 attack outcomes on the eligible CIFAR-10 subset (9{,}213 images): image-wise success rate (ASR) and query cost.}
+\label{tab:rq2_attack_summary}
+\begin{tabular}{lrrrrr}
+\toprule
+Run & Eligible & Success & ASR & Median queries (succ) & Median queries (all) \\
+\midrule
+untargeted & 9,213 & 3,477 & 0.377 & 6,000 & 40,400 \\
+fastprior & 9,213 & 1,310 & 0.142 & 70,848 & 70,848 \\
+rise-guided & 9,213 & 3,477 & 0.377 & 6,400 & 40,400 \\
+\bottomrule
+\end{tabular}
+
+\end{table}
