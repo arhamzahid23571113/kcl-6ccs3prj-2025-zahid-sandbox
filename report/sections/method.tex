@@ -1,5 +1,90 @@
 \section{Method}
-% TODO:
-% - Threat model (one-pixel, black-box), success definition
-% - Attack variants (untargeted DE, fastprior, RISE-guided)
-% - Metrics (ASR, query cost, IoU@10, Spearman rho, deletion AUC)
+\label{sec:method}
+
+This chapter specifies the experimental setting, threat model, attack variants, explanation methods, and evaluation metrics used in \Cref{sec:evaluation}.
+
+\subsection{Dataset, model, and preprocessing}
+All experiments use the CIFAR-10 test set \cite{krizhevsky2009cifar} with a fixed index range of 10{,}000 images (indices 0--9{,}999).
+A fixed pretrained CIFAR-10 classifier is used throughout (a ResNet-20 variant as configured in the project code).
+Inputs are represented as $32\times 32$ RGB images and processed using the same normalisation procedure in all runs.
+
+An image is considered \emph{eligible} if it is classified correctly by the clean model.
+On the fixed 10k index set, this yields 9{,}213 eligible images (as reported in \Cref{sec:evaluation}).
+
+\subsection{Threat model}
+The attacker is \emph{black-box}: the model parameters are unknown and the attack can only query the model to obtain output scores (class probabilities).
+The perturbation budget is restricted to a \emph{single pixel}: an adversarial example differs from the clean input at exactly one location $(x,y)$ and may change all three RGB channel values at that location.
+
+Attack cost is measured in \emph{queries}, where one query corresponds to one forward evaluation of the model on a candidate perturbed image.
+
+\subsection{Attack variants}
+All attack variants are based on Differential Evolution (DE) \cite{storn1997de}, following the one-pixel attack formulation of Su et al.\ \cite{su2019onepixel}.
+A candidate solution encodes a pixel location $(x,y)$ and RGB values $(r,g,b)$ in $[0,1]$ (after scaling), and DE iteratively evolves a population of candidates via mutation and crossover to optimise an objective defined by the attack mode.
+
+\subsubsection{Untargeted one-pixel DE (baseline)}
+The baseline attack is an untargeted DE search that attempts to induce misclassification with a single-pixel change.
+For the 10k-scale run, the DE hyperparameters are:
+\begin{itemize}
+  \item population size $=400$, differential weight $F=0.5$, crossover rate $Cr=0.9$;
+  \item maximum generations $=100$;
+  \item early stopping thresholds: \texttt{es\_target}=0.9 and \texttt{es\_nonadv}=0.05;
+  \item random seed $=1337$; device: CUDA (GPU) for the frozen run.
+\end{itemize}
+A trial is counted as successful if the final perturbed image is adversarial (predicted class differs from the clean prediction/true label under the eligibility criterion).
+The run outputs per-image records including whether the attack succeeded, the number of generations used, the query count, and the best $(x,y,r,g,b)$ found.
+
+\subsubsection{Fastprior multi-target DE (fixed-budget)}
+To study a guidance-style variant with a different cost profile, a fixed-budget multi-target configuration is evaluated.
+For each eligible image, a set of target labels is constructed (all classes except the clean predicted label).
+The method runs a fixed DE budget and records the best one-pixel candidate per target.
+
+For the 10k-scale fastprior run, the hyperparameters are:
+\begin{itemize}
+  \item population size \texttt{pop}$=192$, maximum generations $=40$ (fixed budget);
+  \item $F=0.5$, $Cr=0.9$, and \texttt{es\_target}$=0.9$;
+  \item spatial prior controls \texttt{xy\_topk}$=32$ and \texttt{xy\_mutate\_prob}$=0.1$;
+  \item random seed $=1337$; device: CUDA (GPU) for the frozen run.
+\end{itemize}
+An image is considered successful for the \emph{image-wise} success rate if at least one target is achieved (encoded by a non-zero \texttt{hit\_mask} in the recorded outputs).
+Because the budget is fixed, this configuration produces a nearly constant query cost per image in the frozen results.
+
+\subsubsection{Responsibility-map guided DE (RISE-guided)}
+A second guidance variant uses a black-box responsibility (saliency) map to bias the DE search toward pixels predicted to be influential.
+The responsibility map is computed using RISE \cite{petsiuk2018rise}, which estimates pixel importance by querying the model with randomly masked versions of the input.
+The resulting saliency map is converted to a sampling distribution over pixel locations; this distribution is then used to bias initialisation and/or mutation of $(x,y)$ during DE.
+
+The guided DE configuration is evaluated at 10k scale as part of the frozen results pack used in \Cref{sec:evaluation}.
+(Where relevant, the analysis uses the frozen outputs and logs packaged under \texttt{results/final\_pack/}.)
+
+\subsection{Explanation methods}
+To analyse explanation behaviour under successful attacks, three explanation methods are computed before and after the attack:
+\begin{itemize}
+  \item \textbf{Grad-CAM} \cite{selvaraju2017gradcam}: gradient-weighted localisation using a late convolutional layer, producing a coarse spatial heatmap.
+  \item \textbf{Integrated Gradients (IG)} \cite{sundararajan2017ig}: path-integrated attributions from a baseline input to the actual input.
+  \item \textbf{RISE} \cite{petsiuk2018rise}: black-box attribution via random masking and aggregation of output scores.
+\end{itemize}
+For consistency, explanation maps are compared for the same image index before vs after perturbation under a fixed evaluation protocol (described below).
+
+\subsection{Metrics}
+\subsubsection{Attack effectiveness and cost}
+Effectiveness is measured by \emph{attack success rate} (ASR), computed over the eligible set.
+Cost is measured by the number of model queries.
+We report medians over (i) all eligible images and (ii) successful images, matching the summaries in \Cref{sec:evaluation}.
+
+\subsubsection{Explanation stability}
+Stability is measured on successful adversarial examples using two complementary metrics:
+\begin{itemize}
+  \item \textbf{IoU@10}: the intersection-over-union between the sets of top-$k$ salient pixels before vs after, with $k=10$.
+  \item \textbf{Spearman rank correlation} $\rho$: correlation between flattened attribution maps before vs after, capturing rank agreement.
+\end{itemize}
+
+\subsubsection{Explanation faithfulness via deletion AUC}
+Faithfulness is assessed by deletion AUC.
+Pixels are removed (e.g., set to a baseline value) in descending order of saliency, and the model score for the chosen class is tracked as a function of the fraction deleted.
+The area under this curve (AUC) is computed for clean and adversarial inputs; we report both values and $\Delta$ deletion AUC (adversarial minus clean).
+
+\subsection{Experimental protocol and aggregation}
+All runs use the fixed 10k index range.
+Eligibility is determined on the clean model, and attack metrics are computed over eligible images.
+Explanation metrics are computed on successful adversarial examples; therefore, reported stability/faithfulness values reflect both the perturbations and the distribution of successful cases under each run configuration.
+Random seeds are fixed (seed $=1337$ in the frozen runs) and the report uses the frozen results pack (\texttt{results/final\_pack/}) to ensure that all numbers, plots, and \LaTeX{} tables are reproducible.

@@ -4,19 +4,54 @@
 \usepackage[backend=biber,style=ieee]{biblatex}
 \addbibresource{bib/refs.bib}
 
-\title{Project Title}
-\author{Arham Zahid}
-\date{\today}
-
 \begin{document}
-\maketitle
 
-\begin{abstract}
-% Write your abstract here.
-\end{abstract}
+% Disable page anchors on the title page to avoid duplicate hyperref destinations.
+\hypersetup{pageanchor=false}
+\thispagestyle{empty}
+\begin{center}
+\vspace*{2cm}
+{\LARGE \textbf{Improving One-Pixel Attacks on Image Classifiers}\par}
+\vspace{1.5cm}
+
+{\large Individual Project Report\par}
+\vspace{1.5cm}
+
+\begin{tabular}{@{}ll@{}}
+Student name: & Arham Zahid \\
+Student ID: & 22057308 \\
+Programme: & BSc Computer Science \\
+Supervisor: & Hana Chockler \\
+\end{tabular}
+
+\vfill
+{\large \today\par}
+\end{center}
+\clearpage
+\hypersetup{pageanchor=true}
+
+% Front matter (roman numerals)
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+\section*{Originality avowal}
+\addcontentsline{toc}{section}{Originality avowal}
+I confirm that this report is my own work. Where the work of others has been used, it is acknowledged in the text and fully referenced. This report has not been submitted for any other assessment.
+
+\clearpage
+
+\section*{Abstract}
+\addcontentsline{toc}{section}{Abstract}
+% TODO: 150--250 words: problem, method, key results (RQ1 + RQ2), conclusion.
+
+\clearpage
 
 \tableofcontents
-\newpage
+\clearpage
+
+% Main matter (arabic numerals)
+\pagenumbering{arabic}
+\setcounter{page}{1}
 
 \input{sections/introduction}
 \input{sections/background}
@@ -27,7 +62,7 @@
 \input{sections/conclusion}
 \input{sections/professional_issues}
 
-% Temporary while drafting: include all bibliography entries. Remove before final submission.
+% While drafting: include all bibliography entries. Remove \nocite{*} before final submission.
 \nocite{*}
 \printbibliography
 

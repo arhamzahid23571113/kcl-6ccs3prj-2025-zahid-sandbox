@@ -1,8 +1,28 @@
 \section{Introduction}
+\label{sec:introduction}
 
-As shown by \cite{example2020}.
+Adversarial examples expose vulnerabilities in modern image classifiers: carefully chosen, often imperceptible changes to the input can induce incorrect predictions.
+A particularly extreme demonstration is the \emph{one-pixel attack}, where a classifier is fooled by modifying only a single pixel in the image \cite{su2019onepixel}.
+Although this perturbation budget is tiny, the setting is valuable for studying black-box optimisation attacks and for probing how model explanations behave under minimal but successful perturbations.
 
-As shown by \cite{example2020}.
+This project studies one-pixel attacks on CIFAR-10 \cite{krizhevsky2009cifar} in a black-box threat model, using Differential Evolution (DE) as the optimisation backbone \cite{storn1997de}.
+Beyond attack success, the project evaluates the stability and faithfulness of three popular explanation methods---Grad-CAM \cite{selvaraju2017gradcam}, Integrated Gradients (IG) \cite{sundararajan2017ig}, and RISE \cite{petsiuk2018rise}---when a successful one-pixel adversarial example is applied.
 
-% Keep this file minimal; write real content later.
-This is a skeleton. Replace with your introduction text.
+\subsection{Research questions}
+\textbf{RQ1:} How do successful one-pixel attacks affect explanations? \\
+\textbf{RQ2:} Can responsibility-map guidance improve one-pixel attacks?
+
+\subsection{Contributions}
+The main contributions are:
+\begin{itemize}
+  \item A reproducible 10k-scale evaluation of black-box one-pixel attacks on CIFAR-10, including unguided DE, a fixed-budget fastprior variant, and a responsibility-map guided variant.
+  \item A large-scale analysis of explanation stability (IoU@10 and Spearman rank correlation) and faithfulness (deletion AUC) on successful adversarial examples across Grad-CAM, IG, and RISE.
+  \item Report-ready artefacts (frozen results pack, plots, and \LaTeX{} tables) that support the evaluation and enable reproducibility.
+\end{itemize}
+
+\subsection{Report structure}
+\Cref{sec:background} reviews relevant background.
+\Cref{sec:method} defines the threat model, attack variants, explainers, and metrics.
+\Cref{sec:implementation} describes the implementation and artefact pipeline.
+\Cref{sec:evaluation} presents results and answers RQ1 and RQ2.
+\Cref{sec:conclusion} concludes and outlines future work.
