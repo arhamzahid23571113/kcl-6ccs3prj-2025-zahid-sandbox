@@ -26,7 +26,7 @@ Optional adversarial tensors are saved to \texttt{results/adv\_tensors/} to supp
 
 \subsection{Explanation pipeline}
 Explanations are computed using a dedicated script that loads clean inputs and (when available) the corresponding adversarial tensors for the same index.
-For each index, it computes Grad-CAM, Integrated Gradients, and RISE on the clean and adversarial inputs and writes a single “before vs after” CSV.
+For each index, it computes Grad-CAM, Integrated Gradients, and RISE on the clean and adversarial inputs and writes a single ``before vs after'' CSV.
 
 For the frozen 10k runs, the main explanation artefacts are:
 \begin{itemize}
@@ -47,7 +47,7 @@ The frozen comparison narrative used to support RQ2 is stored as:
 \end{itemize}
 
 \paragraph{Plots and metrics tables.}
-The RQ2 “story and plots” pipeline writes:
+The RQ2 ``story and plots'' pipeline writes:
 \begin{itemize}
   \item \texttt{results/final\_pack/rq2\_metrics\_table.csv}
   \item \texttt{results/final\_pack/story\_rq2\_guidance\_tradeoff.md}
