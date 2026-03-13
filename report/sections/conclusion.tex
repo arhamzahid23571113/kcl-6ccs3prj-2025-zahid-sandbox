@@ -6,29 +6,29 @@ This project investigated one-pixel adversarial attacks on image classifiers und
 \subsection{Summary of findings}
 
 \textbf{RQ1 (effect on explanations).}
-Across successful one-pixel adversarial examples, explanation stability decreases relative to the clean input for all three methods studied (Grad-CAM, Integrated Gradients, and RISE), and deletion-based faithfulness typically degrades (adversarial minus clean deletion AUC is negative on average).
-Integrated Gradients tends to be the most stable explanation method under this attack, while Grad-CAM and RISE show larger shifts in top-ranked pixels and rank ordering.
+Across successful one-pixel adversarial examples, explanation stability decreases relative to the clean input for all three methods studied (Grad-CAM, Integrated Gradients, and RISE), and deletion-based faithfulness also degrades on average.
+Integrated Gradients is the most stable explanation method under this evaluation protocol, while Grad-CAM and RISE show larger changes in top-ranked pixels and attribution ordering.
 
 \textbf{RQ2 (guidance vs baseline).}
-Three attack configurations were compared at 10k scale: untargeted Differential Evolution (DE), a fast-prior multi-target variant, and RISE-guided DE.
-The untargeted baseline achieves an image-wise success rate of 0.377 on 9,213 eligible images, with median 40,000 queries per image and 6,000 queries per successful attack.
-Fast-prior reduces image-wise success to 0.142 and substantially increases median queries per successful attack (30,000), indicating a worse success--cost frontier under the evaluated settings.
-RISE-guided DE attains the same success rate as untargeted DE (0.377), with similar median queries per image (40,400) and slightly higher median queries per successful attack (6,400), suggesting that simple responsibility-map guidance does not automatically improve efficiency.
+Three attack configurations were compared at 10k scale: untargeted Differential Evolution (DE), a fastprior multi-target variant, and RISE-guided DE.
+The untargeted baseline achieves an image-wise success rate of 0.3774 on 9{,}213 eligible images, with median query cost 40{,}400 over all eligible images and 6{,}000 among successful attacks.
+Fastprior reduces image-wise success to 0.1422 and has a target-wise success rate of 1.8\% (1{,}482 successful targets out of 82{,}917 target attempts); its median query cost is 70{,}848 both overall and among successful images because of its fixed-budget design.
+RISE-guided DE attains the same image-wise success rate as untargeted DE (0.3774), with the same median overall query cost (40{,}400) and a slightly higher median successful query cost (6{,}400), suggesting that simple responsibility-map guidance does not improve efficiency in this configuration.
 
-Among successful adversarial examples, fast-prior yields higher explanation stability (IoU@10 and Spearman) than the untargeted and RISE-guided runs, while RISE-guided stability is broadly similar to baseline.
-This indicates that the \emph{distribution of successful cases} changes with guidance, which can affect explanation metrics even when the perturbation budget is fixed to a single pixel.
+Among successful adversarial examples, fastprior yields higher explanation stability across all three explainers, whereas RISE-guided DE remains close to baseline for Grad-CAM and Integrated Gradients but lowers RISE-based stability.
+This indicates that guidance changes the \emph{distribution of successful cases}, which can affect explanation metrics even when the perturbation budget remains fixed to a single pixel.
 
 \subsection{Limitations}
 
 The evaluation uses a single dataset (CIFAR-10) and a fixed pretrained architecture, so results may not generalise to higher-resolution datasets, different model families, or other threat models.
-Explanation metrics are computed only on successful adversarial examples; therefore, stability/faithfulness estimates reflect both explanation sensitivity and selection effects induced by the attack configuration.
+Explanation metrics are computed only on successful adversarial examples; therefore, stability and faithfulness estimates reflect both explanation sensitivity and the selection effects induced by each attack configuration.
 
 \subsection{Future work}
 
 Future work can strengthen both the scientific conclusions and the practical utility of guidance:
 \begin{itemize}
-  \item \textbf{Broader model coverage:} replicate on additional CIFAR-10 architectures and at least one higher-resolution dataset to test whether stability trends persist.
-  \item \textbf{Improved guidance mechanisms:} replace the current heuristic integration of saliency with principled priors or hybrid objectives (e.g., multi-objective DE balancing target confidence and saliency alignment).
-  \item \textbf{Query-efficiency analysis:} characterise the full cost distribution (not only medians), including tail behaviour and early-stopping sensitivity.
-  \item \textbf{Robustness and defences:} evaluate whether standard robustness techniques (e.g., adversarial training or input preprocessing) change explanation stability under one-pixel attacks.
+  \item \textbf{Broader model coverage:} replicate on additional CIFAR-10 architectures and at least one higher-resolution dataset to test whether the observed stability trends persist.
+  \item \textbf{Improved guidance mechanisms:} replace the current heuristic saliency integration with principled priors or hybrid objectives, for example multi-objective DE balancing target confidence and saliency alignment.
+  \item \textbf{Query-efficiency analysis:} characterise the full cost distribution, not only medians, including tail behaviour and early-stopping sensitivity.
+  \item \textbf{Robustness and defences:} evaluate whether standard robustness techniques such as adversarial training or input preprocessing change explanation stability under one-pixel attacks.
 \end{itemize}

@@ -1,82 +1,125 @@
 \section{Implementation}
 \label{sec:implementation}
 
-This chapter describes the project artefacts and the implementation pipeline used to generate the frozen results pack and the report-ready figures and tables referenced in \Cref{sec:evaluation}.
+This section describes the computing artefact produced for the project and the pipeline used to convert raw experiment outputs into the frozen results pack and the report-ready figures and tables used in \Cref{sec:evaluation}.
+The implementation is designed as a reproducible research toolkit rather than as a single monolithic script.
+That design choice matters because the project is not only about obtaining attack results; it is also about ensuring that those results can be regenerated, checked, and traced back to stable intermediate artefacts.
+
+\subsection{Artefact view}
+The implemented artefact is an end-to-end software pipeline for black-box one-pixel attack evaluation.
+At a high level, the pipeline consists of four stages:
+\begin{enumerate}
+  \item loading the dataset and model and determining the eligible image subset;
+  \item generating one-pixel adversarial examples under a selected attack mode;
+  \item computing explanations and explanation-derived metrics on clean/adversarial pairs;
+  \item aggregating the outputs into summaries, plots, and \LaTeX{} tables for the final report.
+\end{enumerate}
+This structure follows the artefact-oriented design set out in the BSPR: attacks produce structured outputs, later stages consume those outputs through stable file interfaces, and the final report imports generated artefacts rather than hand-copied numbers.
 
 \subsection{Repository structure}
-The implementation is organised to separate attacks, explanations, experiment scripts, and report artefacts:
+The implementation is organised to separate reusable components, experiment entry points, raw outputs, and report assets:
 \begin{itemize}
-  \item \texttt{scripts/}: command-line entry points for running attacks, computing explanations, summarising results, and generating report-ready outputs.
-  \item \texttt{attacks/}: reusable attack components (e.g., DE-based one-pixel search variants).
-  \item \texttt{explanations/}: explainer implementations and supporting utilities for Grad-CAM, IG, and RISE.
-  \item \texttt{results/}: experiment outputs (CSVs, logs, plots) and the frozen results pack under \texttt{results/final\_pack/}.
-  \item \texttt{report/}: the \LaTeX{} report, with imported figures under \texttt{report/figures/final\_pack/} and imported tables under \texttt{report/tables/final\_pack/}.
+  \item \texttt{scripts/}: command-line entry points for running attacks, computing explanations, aggregating results, and exporting report-ready artefacts.
+  \item \texttt{attacks/}: reusable implementations of DE-based one-pixel search variants.
+  \item \texttt{explanations/}: explanation methods and utilities for Grad-CAM, IG, RISE, and downstream metric computation.
+  \item \texttt{results/}: experiment outputs including CSVs, logs, plots, summaries, and the frozen final pack under \texttt{results/final\_pack/}.
+  \item \texttt{report/}: the \LaTeX{} report together with imported figures and tables derived from the frozen final pack.
 \end{itemize}
+
+This separation reduces accidental coupling between exploratory experimentation and the final report.
+It also makes partial recomputation practical: for example, explanation summaries can be regenerated from frozen attack outputs without rerunning the attack itself.
+
+\subsection{CLI and stable interfaces}
+A key implementation goal is repeatability.
+The artefact therefore exposes command-line entry points for the major pipeline stages rather than relying on ad hoc notebooks or manual file editing.
+In practice, the workflow is organised around commands that evaluate the baseline model, run one-pixel attacks, compute explanations, and summarise results into report-ready outputs.
+
+Equally important is the use of stable file contracts between stages.
+Attack scripts write structured CSV outputs and, when required, adversarial tensors.
+Explanation scripts consume those artefacts and write ``before vs after'' CSVs.
+Summary scripts then aggregate those files into plots, markdown summaries, and \LaTeX{} tables.
+This file-based design makes later stages less fragile and allows expensive stages to be reused without recomputation.
 
 \subsection{Attack pipeline}
-Attacks are executed via a single runner that loads the CIFAR-10 model, filters to the eligible set (correctly classified images), and performs one-pixel optimisation according to the chosen mode.
-The runner outputs a CSV per run containing per-image records, including: dataset index, clean prediction and confidence, success flags, generations used, query count, and the best one-pixel parameters $(x,y,r,g,b)$ (for untargeted runs) or per-target summaries (for multi-target runs).
+Attacks are executed through a common runner that loads the model and dataset, filters the evaluation set to eligible images, applies the chosen one-pixel optimisation procedure, and records per-image outputs.
+For untargeted runs, the output CSV includes the image index, clean prediction, success flag, generations used, query count, and the best one-pixel parameters $(x,y,r,g,b)$.
+For multi-target runs, the output also records target-level information used to reconstruct image-wise and target-wise success.
 
-For the frozen 10k experiments used in \Cref{sec:evaluation}:
+For the frozen 10k-scale experiments used in \Cref{sec:evaluation}, the principal raw attack artefacts are:
 \begin{itemize}
-  \item Untargeted DE outputs are stored as \texttt{results/attacks/de1px\_untargeted\_10000.csv}.
-  \item Fastprior multi-target outputs are stored as \texttt{results/attacks/de1px\_targeted\_fastprior\_10000.csv}.
+  \item \texttt{results/attacks/de1px\_untargeted\_10000.csv}
+  \item \texttt{results/attacks/de1px\_targeted\_fastprior\_10000.csv}
 \end{itemize}
-Optional adversarial tensors are saved to \texttt{results/adv\_tensors/} to support downstream explanation computation without rerunning the attack.
+Optional adversarial tensors can also be written under \texttt{results/adv\_tensors/} so that explanation computation can be performed later without rerunning the attack stage.
 
 \subsection{Explanation pipeline}
-Explanations are computed using a dedicated script that loads clean inputs and (when available) the corresponding adversarial tensors for the same index.
-For each index, it computes Grad-CAM, Integrated Gradients, and RISE on the clean and adversarial inputs and writes a single ``before vs after'' CSV.
+A dedicated explanation script computes Grad-CAM, Integrated Gradients, and RISE on the clean and adversarial versions of the same image index.
+The main output is a single ``before vs after'' CSV per run, containing the information required for stability and faithfulness analysis.
 
-For the frozen 10k runs, the main explanation artefacts are:
+For the frozen 10k runs, the main explanation artefacts include:
 \begin{itemize}
   \item \texttt{results/explanations/before\_after\_10000\_untargeted\_gpu.csv}
   \item \texttt{results/explanations/before\_after\_10000\_fastprior\_gpu.csv}
   \item \texttt{results/final\_pack/before\_after\_10000\_rise\_guided\_gpu.csv}
 \end{itemize}
-These files are the inputs to the stability and faithfulness computations reported in \Cref{sec:evaluation}.
+These files support the computation of IoU@10, Spearman rank correlation, and deletion AUC before and after attack.
 
 \subsection{Summaries, plots, and report-ready exports}
-To support both analysis and report writing, the repository includes scripts that aggregate the raw CSV outputs into human-readable summaries, plots, and \LaTeX{} tables.
+The final report does not read raw experiment CSVs directly.
+Instead, the repository includes aggregation scripts that transform raw outputs into compact summaries, comparison narratives, plots, and \LaTeX{} tables.
 
-\paragraph{Comparative summaries.}
-A comparison script produces a single Markdown summary comparing explanation metrics across multiple runs (including the fastprior encoding via \texttt{hit\_mask}).
-The frozen comparison narrative used to support RQ2 is stored as:
+A comparison script produces Markdown summaries across multiple attack runs, including the correct handling of the fastprior \texttt{hit\_mask} encoding.
+The frozen comparison narrative used for RQ2 is stored in:
 \begin{itemize}
   \item \texttt{results/final\_pack/summary\_compare\_10000\_untargeted\_fastprior\_rise\_guided\_gpu\_v4.md}
 \end{itemize}
 
-\paragraph{Plots and metrics tables.}
-The RQ2 ``story and plots'' pipeline writes:
+A separate ``story and plots'' stage produces the consolidated metrics table and narrative summary for the guidance comparison:
 \begin{itemize}
   \item \texttt{results/final\_pack/rq2\_metrics\_table.csv}
   \item \texttt{results/final\_pack/story\_rq2\_guidance\_tradeoff.md}
 \end{itemize}
-and generates the report figures that are copied into \texttt{report/figures/final\_pack/}.
 
-\paragraph{\LaTeX{} tables.}
-A report-table script converts the frozen CSV metrics into compact \LaTeX{} tables under \texttt{report/tables/final\_pack/}, including:
-\texttt{rq2\_attack\_summary.tex}, \texttt{rq2\_stability\_means.tex}, and \texttt{rq2\_del\_delta\_means.tex}.
-These are included directly from \Cref{sec:evaluation}.
+Report tables are generated automatically under \texttt{report/tables/final\_pack/}, including \texttt{rq2\_attack\_summary.tex}, \texttt{rq2\_stability\_means.tex}, and \texttt{rq2\_del\_delta\_means.tex}.
+The report therefore imports generated artefacts rather than manually transcribed numbers, which reduces error risk and makes inconsistencies easier to detect.
+
+\subsection{Verification and testing}
+Because this is a computing artefact as well as an experimental study, verification is important.
+The implementation was checked in several complementary ways.
+
+First, baseline sanity checks were used to verify that the classifier and dataset pipeline behaved as expected on fixed subsets before expensive large-scale runs were attempted.
+Second, attack smoke tests were run on small index lists before the 10k-scale experiments, so that configuration or device issues could be caught cheaply.
+Third, metric code was validated through controlled checks and small-scale inspection to ensure that overlap, rank-correlation, and deletion-based summaries were behaving plausibly.
+Fourth, reproducibility checks were supported through fixed seeds, logged configuration parameters, and frozen artefacts used by the report.
+
+These checks do not amount to a formal proof of correctness, but they do provide evidence that the artefact is behaving consistently and that the reported outputs are not the product of a single unverified run.
 
 \subsection{Frozen results pack and evidence mapping}
-All reported numbers in \Cref{sec:evaluation} are derived from a frozen results pack under \texttt{results/final\_pack/}.
-This directory contains the key CSVs, logs, plots, and a short evidence map:
+All reported numbers in the evaluation chapter are derived from a frozen results pack under \texttt{results/final\_pack/}.
+This directory contains the relevant CSVs, logs, plots, summaries, and supporting documentation, including:
 \begin{itemize}
-  \item \texttt{results/final\_pack/README.md} describing contents,
-  \item \texttt{results/final\_pack/CLAIMS\_EVIDENCE.md} mapping claims to artefacts.
+  \item \texttt{results/final\_pack/README.md}, which describes the pack contents;
+  \item \texttt{results/final\_pack/CLAIMS\_EVIDENCE.md}, which maps major claims to specific artefacts.
 \end{itemize}
-Freezing the pack avoids accidental drift in results while iterating on the report and enables consistent regeneration of the report-ready figures and tables.
+
+Freezing the pack serves two purposes.
+First, it prevents result drift while the report text is being edited.
+Second, it creates a clear evidential chain from raw run outputs to final claims, which is important for both reproducibility and research integrity.
 
 \subsection{Reproducibility considerations}
-The pipeline is designed to be reproducible:
+The implementation is designed to support reproducibility and auditability:
 \begin{itemize}
-  \item The evaluated image set is fixed (indices 0--9{,}999) and eligibility is determined by the clean model.
-  \item Random seeds are fixed for the frozen runs (seed 1337 as recorded in run outputs).
-  \item Attack outputs record the configuration parameters (e.g., population size, $F$, $Cr$, generations, and early stopping thresholds) alongside results.
-  \item The report imports only frozen artefacts (tables/figures) produced from the final pack.
+  \item the evaluated image set is fixed to indices 0--9{,}999;
+  \item eligibility is determined from the clean model and reused consistently;
+  \item random seeds are fixed for the frozen runs;
+  \item attack outputs record configuration details such as population size, crossover settings, generation limits, and stopping thresholds;
+  \item the report imports only frozen figures and tables produced from the final pack.
 \end{itemize}
 
+An important practical decision is that the report depends on imported artefacts rather than on manual copying.
+That makes the final document more trustworthy, because each major number can be traced back to a generated file rather than to handwritten transcription.
+
 \subsection{Hardware and software}
-Development and report writing are performed on a macOS workstation, while the 10k-scale runs are executed with GPU acceleration (CUDA) on a dedicated compute environment.
-The implementation uses Python and PyTorch, with scripts structured so that the same codepaths can run on CPU or GPU depending on the selected device.
+Development and report writing were performed on a macOS workstation, while the large 10k-scale runs were executed with CUDA-enabled GPU acceleration on a dedicated compute environment.
+The implementation is written in Python using PyTorch and supporting scientific libraries.
+Where possible, the same codepaths are structured to run on CPU or GPU depending on the selected device, while the frozen large-scale results reported here come from the GPU-backed execution environment.

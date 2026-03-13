@@ -1,25 +1,23 @@
 \section{Evaluation}
 \label{sec:evaluation}
 
-This chapter answers the research questions using the frozen results pack in \texttt{results/final\_pack/} and the report-ready imports under \texttt{report/figures/final\_pack/}.
+This section answers the research questions using the frozen results pack in \texttt{results/final\_pack/} and the report-ready imports under \texttt{report/figures/final\_pack/}.
 
 \subsection{Experimental setup}
 All experiments use the CIFAR-10 test set and a fixed index set of 10{,}000 images (indices 0--9{,}999). An image is considered \emph{eligible} if it is classified correctly by the clean model; this yields 9{,}213 eligible images. The threat model is black-box and restricted to a single-pixel perturbation: an adversarial example differs from the clean input at exactly one $(x,y)$ location and may change all three RGB channel values at that pixel.
 
-The baseline attack is an untargeted one-pixel Differential Evolution (DE) search. Two guidance variants are evaluated for RQ2: (i) a fastprior variant that uses a fixed-budget multi-target DE configuration, and (ii) a responsibility-map guided DE variant that uses a black-box saliency prior derived from RISE to bias pixel selection/mutation. Attacks are evaluated by image-wise success rate (ASR) on the eligible set and by query cost (number of model evaluations), summarised using medians over all trials and over successful trials.
+The baseline attack is an untargeted one-pixel Differential Evolution (DE) search. Two guidance variants are evaluated for RQ2: (i) a fastprior variant that uses a fixed-budget multi-target DE configuration, and (ii) a responsibility-map-guided DE variant that uses a black-box saliency prior derived from RISE to bias pixel selection and mutation. Attacks are evaluated by image-wise success rate (ASR) on the eligible set and by query cost (number of model evaluations), summarised using medians over all trials and over successful trials.
 
-For RQ1/RQ2 explanation analysis, three explainers are computed: Grad-CAM, Integrated Gradients (IG), and RISE. Stability is measured on successful adversarial examples using IoU@10 (overlap of the top-$k$ salient pixels with $k=10$) and Spearman rank correlation $\rho$ between attribution maps before vs after the attack. Faithfulness is assessed via deletion AUC, reported for clean and adversarial inputs and as the difference (adversarial minus clean).
-
+For RQ1 and RQ2 explanation analysis, three explainers are computed: Grad-CAM, Integrated Gradients (IG), and RISE. Stability is measured on successful adversarial examples using IoU@10 (overlap of the top-$k$ salient pixels with $k=10$) and Spearman rank correlation $\rho$ between attribution maps before vs after the attack. Faithfulness is assessed via deletion AUC, reported for clean and adversarial inputs and as the difference (adversarial minus clean).
 
 \subsection{RQ1: How do successful one-pixel attacks affect explanations?}
 
 \paragraph{RQ1: Explanation stability under successful one-pixel attacks.}
-We analyse how explanation maps change under successful one-pixel adversarial examples using three explainers (Grad-CAM, Integrated Gradients, and RISE) and stability metrics computed on the successful subset (3{,}477 adversarial examples out of 10{,}000 indices).
-Across explainers, Integrated Gradients exhibits the highest stability, with mean IoU@10 of 0.485 and mean Spearman $\rho$ of 0.842, while Grad-CAM achieves mean IoU@10 of 0.326 and mean $\rho$ of 0.695.
-RISE shows the lowest rank-stability (mean $\rho$ of 0.477) and comparable IoU@10 to Grad-CAM (0.322), consistent with its stochastic masking mechanism.
-Faithfulness measured by deletion AUC decreases under successful attacks for all explainers: the mean change (adversarial minus clean) is negative for Grad-CAM (-0.103), IG (-0.027), and RISE (-0.095).
-Overall, successful one-pixel perturbations are associated with reduced faithfulness and method-dependent explanation stability, with IG most stable under this evaluation protocol.
-
+RQ1 is evaluated on the successful untargeted adversarial subset, which contains 3{,}477 successful attacks drawn from the 9{,}213 eligible images in the 10{,}000-index evaluation set.
+Across explainers, Integrated Gradients exhibits the highest stability, with mean IoU@10 of 0.485 and mean Spearman $\rho$ of 0.842.
+Grad-CAM achieves mean IoU@10 of 0.326 and mean $\rho$ of 0.695, while RISE shows comparable IoU@10 (0.322) but substantially lower rank-stability (mean $\rho$ of 0.477).
+Faithfulness measured by deletion AUC also deteriorates under successful attacks for all explainers: the mean change (adversarial minus clean) is negative for Grad-CAM (-0.173), IG (-0.060), and RISE (-0.165).
+Overall, successful one-pixel perturbations are associated with reduced faithfulness and method-dependent explanation stability, with IG the most stable of the three evaluated explainers under this protocol.
 
 \begin{figure}[t]
   \centering
@@ -63,11 +61,11 @@ Overall, successful one-pixel perturbations are associated with reduced faithful
 
 \paragraph{Effectiveness and query cost.}
 Table~\ref{tab:rq2_attack_summary} and Figures~\ref{fig:rq2_asr}--\ref{fig:rq2_queries_succ} summarise the trade-off between image-wise success rate (ASR) and query cost on the 9{,}213 eligible CIFAR-10 test images.
-The unguided untargeted DE baseline achieves an ASR of 0.3774 (3{,}477/9{,}213) with a median successful query cost of 6{,}000 and a median query cost of 40{,}400 over all images.
-The fastprior variant reduces ASR to 0.1422 (1{,}310/9{,}213) and is substantially more expensive in this configuration, with median query cost 70{,}848 (both overall and among successes), reflecting its fixed-budget design.
-The RISE-guided variant achieves the same ASR as the unguided baseline (0.3774; 3{,}477/9{,}213) but changes the cost profile among successes: the median successful query cost increases from 6{,}000 to 6{,}400, while the overall median remains 40{,}400.
-Overall, the evaluated responsibility-map guidance does not improve ASR over the unguided baseline at 10k scale, but it does measurably shift the ASR--cost trade-off relative to both baselines.
-
+The untargeted DE baseline achieves an ASR of 0.3774 (3{,}477/9{,}213), with median query cost 6{,}000 among successful attacks and 40{,}400 over all eligible images.
+The fastprior variant reduces image-wise ASR to 0.1422 (1{,}310/9{,}213) and is substantially more expensive in this configuration, with median query cost 70{,}848 both overall and among successful images, reflecting its fixed-budget design.
+At the target level, fastprior records 1{,}482 successful targets out of 82{,}917 target attempts (1.8\%), showing that it does find successful targets but converts these into successful images much less often than the untargeted baseline.
+The RISE-guided variant achieves the same ASR as the unguided baseline (0.3774; 3{,}477/9{,}213) but changes the cost profile among successful attacks: the median successful query cost increases from 6{,}000 to 6{,}400, while the overall median remains 40{,}400.
+Overall, the evaluated guidance strategies do not improve the headline success--cost frontier at 10k scale: fastprior trades image-wise success for stability, while simple RISE guidance preserves ASR but does not reduce query cost.
 
 \subsubsection{Explanation stability among successful adversarials}
 \input{tables/final_pack/rq2_stability_means}
@@ -96,13 +94,18 @@ Overall, the evaluated responsibility-map guidance does not improve ASR over the
 
 \paragraph{Explanation stability among successful adversarials.}
 Table~\ref{tab:rq2_stability_means}, Table~\ref{tab:rq2_del_delta}, and Figures~\ref{fig:rq2_iou10}--\ref{fig:rq2_delauc_delta} compare explanation stability and faithfulness metrics computed on successful adversarial examples.
-Across all runs, Integrated Gradients (IG) exhibits higher rank-stability than Grad-CAM and RISE (mean Spearman $\rho\approx 0.842$ for untargeted and 0.866 for fastprior), while RISE shows the lowest stability.
-Comparing unguided vs RISE-guided successes, Grad-CAM and IG are essentially unchanged (e.g., IoU@10 for Grad-CAM: 0.3260 vs 0.3255; Spearman for IG: 0.8420 vs 0.8420), whereas RISE stability decreases under guidance (IoU@10: 0.3223 to 0.2962; Spearman: 0.4772 to 0.4454).
-Deletion-based faithfulness degrades under successful attacks for all methods (negative $\Delta$ deletion AUC), with the magnitude depending on the explanation method and run (e.g., Grad-CAM $\Delta$ delAUC: -0.1730 untargeted, -0.1728 RISE-guided; RISE $\Delta$ delAUC: -0.1647 untargeted, -0.1588 RISE-guided).
-These results suggest that guidance can change the composition of successful adversarials in ways that affect explanation stability (particularly for the RISE explainer), even when headline ASR is unchanged.
-
+Across all runs, Integrated Gradients exhibits the highest rank-stability, with mean Spearman $\rho$ 0.842 for untargeted, 0.866 for fastprior, and 0.842 for RISE-guided.
+Comparing untargeted vs RISE-guided successes, Grad-CAM and IG are almost unchanged (for example, IoU@10 for Grad-CAM is 0.326 vs 0.325, and Spearman for IG is 0.842 vs 0.842), whereas RISE stability decreases under guidance (IoU@10: 0.322 to 0.296; Spearman: 0.477 to 0.445).
+Fastprior successful cases are more stable across all three explainers (IoU@10 0.517/0.532/0.367 and Spearman 0.839/0.866/0.525 for Grad-CAM/IG/RISE), but this improvement comes together with much lower image-wise ASR and much higher query cost.
+Deletion-based faithfulness degrades under successful attacks for all runs and methods, with negative mean $\Delta$ deletion AUC throughout: untargeted (-0.173, -0.060, -0.165), fastprior (-0.148, -0.069, -0.148), and RISE-guided (-0.173, -0.060, -0.159) for Grad-CAM, IG, and RISE respectively.
+These results suggest that guidance changes the composition of successful adversarial examples rather than uniformly improving attack quality: some guided successes are more explanation-stable, but this does not translate into a better overall success--cost trade-off.
 
 \subsection{Discussion and limitations}
-Two themes emerge. First, explanation behaviour under successful one-pixel attacks is method-dependent: IG is consistently more stable than Grad-CAM and RISE, while all explainers show reduced deletion-based faithfulness on successful adversarials (RQ1). Second, responsibility-map guidance changes trade-offs rather than uniformly improving outcomes (RQ2): in the evaluated configuration, RISE-guided DE does not increase ASR over the unguided baseline, but it shifts the median query cost among successes and alters stability metrics for the RISE explainer.
+Two clear themes emerge.
+First, explanation behaviour under successful one-pixel attacks is method-dependent: IG is consistently more stable than Grad-CAM and RISE, while all explainers show reduced deletion-based faithfulness on successful adversarial examples.
+Second, responsibility-map guidance changes trade-offs rather than uniformly improving outcomes: fastprior produces more stable successful cases but at much lower image-wise success and much higher cost, while RISE-guided DE preserves headline ASR but does not improve efficiency and reduces RISE-based stability.
 
-These results are conditioned on the specific threat model (single-pixel, black-box) and the chosen model and dataset. The fastprior configuration uses a fixed budget, which makes its query cost less comparable to adaptive stopping strategies. Explanation metrics are computed only on successful adversarial examples and therefore reflect the distribution of successes; changes in stability can arise either from different perturbations or from selection effects. Finally, while the results are frozen and reproducible via the provided scripts and the final results pack, broader generalisation (e.g., to other architectures, datasets, or multi-pixel perturbations) is out of scope for this evaluation.
+These results are conditioned on the specific threat model (single-pixel, black-box) and the chosen model and dataset.
+The fastprior configuration uses a fixed budget, which makes its query cost less comparable to adaptive stopping strategies.
+Explanation metrics are computed only on successful adversarial examples and therefore reflect both explanation sensitivity and the changed composition of successful cases under each attack configuration.
+Finally, while the results are frozen and reproducible via the provided scripts and final results pack, broader generalisation to other architectures, datasets, or multi-pixel perturbations remains outside the scope of this evaluation.

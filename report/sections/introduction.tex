@@ -1,28 +1,34 @@
 \section{Introduction}
 \label{sec:introduction}
 
-Adversarial examples expose vulnerabilities in modern image classifiers: carefully chosen, often imperceptible changes to the input can induce incorrect predictions.
-A particularly extreme demonstration is the \emph{one-pixel attack}, where a classifier is fooled by modifying only a single pixel in the image \cite{su2019onepixel}.
-Although this perturbation budget is tiny, the setting is valuable for studying black-box optimisation attacks and for probing how model explanations behave under minimal but successful perturbations.
+Adversarial examples demonstrate that modern image classifiers can be highly sensitive to carefully chosen perturbations.
+Even when the change to the input is very small, the model can produce a confidently incorrect prediction.
+This matters both scientifically, because it reveals properties of learned decision boundaries, and practically, because it exposes robustness risks in deployed machine learning systems.
 
-This project studies one-pixel attacks on CIFAR-10 \cite{krizhevsky2009cifar} in a black-box threat model, using Differential Evolution (DE) as the optimisation backbone \cite{storn1997de}.
-Beyond attack success, the project evaluates the stability and faithfulness of three popular explanation methods---Grad-CAM \cite{selvaraju2017gradcam}, Integrated Gradients (IG) \cite{sundararajan2017ig}, and RISE \cite{petsiuk2018rise}---when a successful one-pixel adversarial example is applied.
+A particularly striking case is the \emph{one-pixel attack}, in which the adversary is restricted to modifying only a single pixel in the image \cite{su2019onepixel}.
+Although this perturbation budget is extremely small, the setting remains useful for two reasons.
+First, it provides a clean and interpretable black-box optimisation problem in a low-dimensional search space.
+Second, it offers a controlled way to study how post-hoc explanations behave when a classifier is changed from a correct to an incorrect decision by a minimal but successful perturbation.
+
+This project studies one-pixel attacks on CIFAR-10 \cite{krizhevsky2009cifar} under a black-box threat model, using Differential Evolution (DE) as the optimisation backbone \cite{storn1997de}.
+Beyond attack success alone, the project evaluates the behaviour of three widely used explanation methods---Grad-CAM \cite{selvaraju2017gradcam}, Integrated Gradients (IG) \cite{sundararajan2017ig}, and RISE \cite{petsiuk2018rise}---under successful one-pixel adversarial perturbations.
+The report therefore addresses both adversarial effectiveness and explanation robustness in a single experimental framework.
 
 \subsection{Research questions}
 \textbf{RQ1:} How do successful one-pixel attacks affect explanations? \\
 \textbf{RQ2:} Can responsibility-map guidance improve one-pixel attacks?
 
 \subsection{Contributions}
-The main contributions are:
+The main contributions of the project are as follows:
 \begin{itemize}
-  \item A reproducible 10k-scale evaluation of black-box one-pixel attacks on CIFAR-10, including unguided DE, a fixed-budget fastprior variant, and a responsibility-map guided variant.
-  \item A large-scale analysis of explanation stability (IoU@10 and Spearman rank correlation) and faithfulness (deletion AUC) on successful adversarial examples across Grad-CAM, IG, and RISE.
-  \item Report-ready artefacts (frozen results pack, plots, and \LaTeX{} tables) that support the evaluation and enable reproducibility.
+  \item A reproducible 10k-scale study of black-box one-pixel attacks on CIFAR-10, covering an untargeted DE baseline, a fixed-budget fastprior multi-target variant, and a responsibility-map-guided DE variant.
+  \item A systematic analysis of explanation behaviour under successful adversarial perturbations using three explanation methods and three quantitative measures: IoU@10, Spearman rank correlation, and deletion AUC.
+  \item A report-ready experimental artefact pipeline, including frozen CSV outputs, comparison summaries, generated plots, and imported \LaTeX{} tables, so that the numbers reported in the final evaluation are traceable to fixed source artefacts.
 \end{itemize}
 
 \subsection{Report structure}
-\Cref{sec:background} reviews relevant background.
-\Cref{sec:method} defines the threat model, attack variants, explainers, and metrics.
-\Cref{sec:implementation} describes the implementation and artefact pipeline.
-\Cref{sec:evaluation} presents results and answers RQ1 and RQ2.
-\Cref{sec:conclusion} concludes and outlines future work.
+\Cref{sec:background} reviews the relevant background on adversarial examples, black-box attacks, responsibility-map guidance, and explanation methods.
+\Cref{sec:method} defines the threat model, attack variants, explanation methods, metrics, and experimental protocol.
+\Cref{sec:implementation} describes the software artefact and the reproducible pipeline used to generate the frozen results pack.
+\Cref{sec:evaluation} presents the experimental results and answers RQ1 and RQ2.
+Finally, \Cref{sec:conclusion} summarises the findings, limitations, and directions for future work.
