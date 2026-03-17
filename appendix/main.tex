@@ -1,0 +1,229 @@
+\documentclass[11pt,a4paper]{report}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{hyperref}
+\usepackage{fancyvrb}
+\usepackage{siunitx}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{threeparttable}
+\usepackage{adjustbox}
+\usepackage{xurl}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue,
+  pageanchor=false
+}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\begin{document}
+
+\begin{titlepage}
+  \centering
+  {\Large King's College London\par}
+  \vspace{1.5cm}
+  {\Huge \textbf{Appendix and Additional Material}\par}
+  \vspace{0.5cm}
+  {\Large Improving One-Pixel Attacks on Image Classifiers\par}
+  \vspace{1.5cm}
+
+  \begin{tabular}{rl}
+    Student name: & Arham Zahid \\
+    Student ID: & 22057308 \\
+    Programme: & BSc Computer Science \\
+    Supervisor: & Hana Chockler \\
+  \end{tabular}
+
+  \vfill
+
+  {\large This document accompanies the main report and contains supporting appendix material, supplementary figures and tables, and reproducibility information.\par}
+
+  \vfill
+  {\large March 2026\par}
+\end{titlepage}
+
+\pagenumbering{roman}
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+\hypersetup{pageanchor=true}
+
+\appendix
+
+\chapter{Overview}
+
+This appendix accompanies the main report and collects supporting material that would have been
+too detailed to include in the report body. Its purpose is to make the submission easier to
+inspect, reproduce, and verify.
+
+The appendix has four goals:
+\begin{enumerate}
+  \item to show how the main report is grounded in a frozen results pack;
+  \item to expose supplementary figures and tables not all shown in the report body;
+  \item to document the key artefacts present at submission time;
+  \item to provide a compact reproducibility route for the submitted implementation.
+\end{enumerate}
+
+\chapter{Claims and Evidence Structure}
+
+The main report was written from frozen artefacts rather than from manually copied numbers.
+In practice, this means that the quantitative claims in the report are backed by generated CSV,
+Markdown summary files, report-ready tables, and report-ready figures stored in the repository.
+
+The evidence chain used for the report can be summarised as follows:
+
+\begin{itemize}
+  \item Raw attack outputs are stored as frozen CSV artefacts in \texttt{results/final\_pack/}.
+  \item Explanation outputs for the reported 10k runs are stored as frozen CSV artefacts in \texttt{results/final\_pack/}.
+  \item Aggregated summaries and comparison narratives are stored as frozen Markdown artefacts in \texttt{results/final\_pack/}.
+  \item Report-ready figures are stored in \texttt{report/figures/final\_pack/}.
+  \item Report-ready tables are stored in \texttt{report/tables/final\_pack/}.
+  \item The report imports these generated assets rather than retyping values by hand.
+\end{itemize}
+
+This design was intended to improve traceability and reduce transcription risk.
+
+\section*{Key Frozen Artefacts}
+
+\small
+\begin{longtable}{L{0.38\textwidth} L{0.54\textwidth}}
+\textbf{Path} & \textbf{Purpose} \\
+\hline
+\nolinkurl{results/final_pack/CLAIMS_EVIDENCE.md} & Mapping between report claims and supporting artefacts. \\
+\nolinkurl{results/final_pack/README.md} & Overview of the frozen results pack and how it is intended to be used. \\
+\nolinkurl{results/final_pack/experiments_gpu_10k_overview.md} & High-level summary of the 10k GPU experiment set. \\
+\nolinkurl{results/final_pack/story_rq2_guidance_tradeoff.md} & Narrative summary of the guidance trade-off result for RQ2. \\
+\nolinkurl{results/final_pack/summary_compare_10000_untargeted_fastprior_rise_guided_gpu_v4.md} & Cross-run comparison summary used to interpret the main RQ2 result. \\
+\nolinkurl{results/final_pack/de1px_untargeted_10000.csv} & Frozen untargeted attack results on the 10k index set. \\
+\nolinkurl{results/final_pack/de1px_targeted_fastprior_10000.csv} & Frozen fastprior targeted attack results on the 10k index set. \\
+\nolinkurl{results/final_pack/before_after_10000_untargeted_gpu.csv} & Frozen explanation metrics for untargeted attack outputs. \\
+\nolinkurl{results/final_pack/before_after_10000_fastprior_gpu.csv} & Frozen explanation metrics for fastprior outputs. \\
+\nolinkurl{results/final_pack/before_after_10000_rise_guided_gpu.csv} & Frozen explanation metrics for RISE-guided outputs. \\
+\nolinkurl{report/figures/final_pack/*} & Report-ready figure assets imported by the main report. \\
+\nolinkurl{report/tables/final_pack/*} & Report-ready LaTeX tables imported by the main report. \\
+\end{longtable}
+\normalsize
+
+\chapter{Artefact Inventory}
+
+The following inventory was generated directly from the repository so that the submitted appendix
+records which frozen-pack files and report-ready assets were present at submission time.
+
+{\scriptsize
+\VerbatimInput{artefact_inventory.txt}
+}
+
+\chapter{Supplementary Figures}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{../report/figures/final_pack/asr_by_run.png}
+  \caption{Attack success rate comparison across the reported runs.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{../report/figures/final_pack/rq1_iou10_adv_mean.png}
+  \caption{RQ1 supplementary figure: mean IoU@10 on successful adversarial examples.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{../report/figures/final_pack/rq1_rho_adv_mean.png}
+  \caption{RQ1 supplementary figure: mean Spearman rank correlation on successful adversarial examples.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{../report/figures/final_pack/rq1_del_auc_delta_mean.png}
+  \caption{RQ1 supplementary figure: mean adversarial-minus-clean deletion AUC change.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{../report/figures/final_pack/rq2_asr_image_percent.png}
+  \caption{RQ2 supplementary figure: image-wise attack success rate by variant.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{../report/figures/final_pack/rq2_queries_median_success.png}
+  \caption{RQ2 supplementary figure: median successful query cost by variant.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{../report/figures/final_pack/rq2_iou10_adv_mean.png}
+  \caption{RQ2 supplementary figure: mean IoU@10 among successful adversarial examples.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{../report/figures/final_pack/rq2_rho_adv_mean.png}
+  \caption{RQ2 supplementary figure: mean Spearman rank correlation among successful adversarial examples.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{../report/figures/final_pack/rq2_del_auc_delta_mean.png}
+  \caption{RQ2 supplementary figure: mean adversarial-minus-clean deletion AUC change by variant.}
+\end{figure}
+
+\clearpage
+\chapter{Supplementary Tables}
+
+The following tables are the report-ready exports generated from the frozen results pack.
+
+\input{../report/tables/final_pack/rq2_attack_summary.tex}
+\clearpage
+
+\input{../report/tables/final_pack/rq2_stability_means.tex}
+\clearpage
+
+\input{../report/tables/final_pack/rq2_del_delta_means.tex}
+\clearpage
+
+\chapter{Reproducibility Route}
+
+This project was structured so that the report could be rebuilt from version-controlled sources
+and imported generated assets.
+
+A compact local route is:
+
+\begin{Verbatim}[fontsize=\small]
+cd ~/Projects/kcl-6ccs3prj-2025
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+cd report
+latexmk -pdf -halt-on-error main.tex
+\end{Verbatim}
+
+The main report uses generated figure and table assets stored under
+\texttt{report/figures/final\_pack/} and \texttt{report/tables/final\_pack/}.
+The appendix inventory and the frozen-pack structure are included so that a marker can inspect
+the evidence trail without having to search through the repository manually.
+
+\chapter{Why this Appendix Exists}
+
+The main report was intentionally kept concise. This appendix therefore serves as a supporting
+document that makes the submission more transparent and easier to audit. It highlights the
+submission's evidence trail, preserves the frozen artefact inventory, and surfaces additional
+figures and tables that strengthen the case for reproducibility and careful experimental method.
+
+\end{document}
