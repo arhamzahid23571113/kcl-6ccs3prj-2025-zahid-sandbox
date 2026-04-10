@@ -1,0 +1,87 @@
+\section{Related work and research positioning}
+\label{sec:related_work}
+
+The previous chapter introduced the core concepts needed for the project.
+This section narrows the focus to the literature most directly relevant to the present study and clarifies what the project contributes relative to that literature.
+The aim is not to survey all of adversarial machine learning or all of explainable AI, but to identify the specific strands of work that motivate the chosen experimental design.
+
+\subsection{Sparse and one-pixel adversarial attacks}
+A large proportion of adversarial machine learning literature studies perturbations under norm-bounded threat models, especially $\ell_\infty$ and $\ell_2$ settings \cite{goodfellow2015explaining,madry2018towards}.
+That literature is important because it establishes the general fact that modern neural networks can be systematically manipulated by carefully chosen inputs.
+However, the one-pixel setting is more specific.
+Rather than asking how much bounded noise can be added overall, it asks whether a classifier can be changed by modifying only one spatial location.
+This makes the perturbation extremely sparse and turns the attack problem into a compact search over a small number of continuous variables.
+
+The one-pixel attack of Su et al.\ is therefore notable not simply because it is visually striking, but because it provides an unusually interpretable black-box optimisation problem \cite{su2019onepixel}.
+The attacker is forced to concentrate all adversarial leverage into a single coordinate and three colour values.
+That is scientifically useful because success under such a restricted budget reveals how locally fragile a learned decision boundary can be.
+It is also methodologically useful because the restricted search space makes the trade-off between attack success, search strategy, and query cost easier to study than in higher-dimensional adversarial settings.
+
+The broader adversarial literature also includes work on perturbations that generalise across inputs, such as universal adversarial perturbations \cite{moosavi2017universal}.
+Although such work is not directly about one-pixel attacks, it reinforces the point that adversarial behaviour should not be treated as an isolated curiosity tied to one optimisation trick.
+The present report operates at the opposite end of the perturbation spectrum: instead of a broad perturbation pattern that transfers widely, it studies an extreme sparse-budget case in which the perturbation is highly local and individually optimised.
+
+\subsection{Black-box attack strategies and query efficiency}
+Once the white-box assumption is removed, adversarial search becomes substantially harder.
+The black-box literature has therefore explored several broad strategies, including transfer-based attacks, query-based zeroth-order optimisation, and decision-based search.
+Papernot et al.\ showed that black-box attacks can be mounted by training substitute models and exploiting transferability \cite{papernot2017practical}.
+Chen et al.\ introduced ZOO, which approximates gradient information through zeroth-order optimisation without requiring a substitute model \cite{chen2017zoo}.
+Brendel et al.\ studied decision-based attacks that require only model decisions rather than rich score information \cite{brendel2018decision}.
+Guo et al.\ further emphasised the practical importance of simple query-based black-box attacks \cite{guo2019simplebb}.
+
+What these works collectively show is that success rate alone is an incomplete way to evaluate a black-box attack.
+Query cost matters because queries are the scarce resource in realistic black-box settings.
+An attack that succeeds eventually but requires substantially more interaction may be much less attractive in practice than one that achieves a similar success rate with fewer evaluations.
+This point is especially important for the present project because RQ2 is explicitly about the success--cost trade-off, not merely about whether guidance can preserve attack success.
+
+The present report differs from this broader black-box literature in two ways.
+First, it operates in the extremely sparse one-pixel regime rather than in a more flexible perturbation space.
+Second, it evaluates guidance using a black-box saliency prior rather than transferability or surrogate gradients.
+The project therefore does not compete with the strongest general-purpose black-box attacks in the literature.
+Instead, it studies whether explanation-derived spatial guidance is useful within a tightly controlled sparse-budget setting.
+
+\subsection{Guidance priors for adversarial search}
+Much of the literature on stronger adversarial attacks improves optimisation by exploiting gradient information, surrogate models, or carefully designed objectives \cite{madry2018towards,chen2017zoo,guo2019simplebb}.
+By contrast, the present project asks whether a post-hoc explanation can act as a practical prior over where a sparse black-box search should focus.
+This is a more specific question than ``how can black-box attacks be made stronger in general?''
+It is instead the question of whether an explanation-derived estimate of current importance is a helpful spatial bias for one-pixel search.
+
+This distinction matters because a saliency prior is not equivalent to gradient access.
+A saliency map explains, approximately and post hoc, which parts of the current input appear influential for the model's current prediction.
+That is not the same as the most query-efficient direction for causing misclassification.
+A guidance prior may still be useful, but its value is empirical rather than guaranteed.
+The literature therefore motivates the idea, but does not settle it.
+
+That gap is part of the reason the present project is worth doing.
+The project does not claim to introduce a novel adversarial optimiser at the level of the broader black-box literature.
+Its narrower contribution is to test whether explanation-derived guidance has measurable value in a sparse black-box one-pixel regime, and to evaluate that value in terms of both attack success and query cost.
+
+\subsection{Adversarial perturbations and post-hoc explanations}
+The second major literature strand concerns post-hoc explanation methods and their robustness.
+Grad-CAM, Integrated Gradients, and RISE represent three important explanation paradigms: activation-based localisation, gradient-based attribution, and black-box perturbation-based attribution respectively \cite{selvaraju2017gradcam,sundararajan2017ig,petsiuk2018rise}.
+These methods are widely used, but the literature has repeatedly shown that explanation outputs should not be treated as automatically reliable or stable.
+
+Adebayo et al.\ demonstrated that some saliency methods can fail important sanity checks, showing that visually plausible explanation maps may not be as informative as they appear \cite{adebayo2018sanity}.
+Work on explanation fragility and manipulation has pushed this further.
+Ghorbani et al.\ showed that neural network interpretations can be fragile under adversarial perturbation \cite{ghorbani2019fragile}.
+Alvarez-Melis and Jaakkola studied the robustness of interpretability methods more directly, emphasising that interpretability outputs themselves may vary sharply under small input changes \cite{alvarezmelis2018robustness}.
+Dombrowski et al.\ showed that explanations can be manipulated in ways driven by geometric properties rather than faithful semantic reasoning \cite{dombrowski2019explanations}.
+
+This literature is highly relevant to RQ1.
+If explanation methods can be fragile or manipulable, then it should not be assumed that a successful one-pixel adversarial example leaves explanation structure intact.
+At the same time, much of the explanation-robustness literature studies explanation instability as a phenomenon in its own right.
+The present project instead embeds explanation analysis within a one-pixel attack pipeline and compares multiple attack variants under the same evaluation regime.
+That makes explanation robustness part of a larger comparative study rather than a standalone explanation paper.
+
+\subsection{Research positioning and contribution boundary}
+The project should be positioned as a reproducible experimental study that combines three strands of literature: sparse black-box attacks, post-hoc explanation robustness, and guidance-based attack design.
+Its contribution is not a new explanation method, not a new state-of-the-art black-box attack, and not a universal robustness claim.
+The contribution is instead the combination itself: a controlled 10k-scale evaluation in which one-pixel attack success, query cost, explanation stability, and deletion-based faithfulness are analysed together.
+
+Relative to Su et al., the project revisits the one-pixel setting with a stronger emphasis on reproducible large-scale comparison and explanation analysis \cite{su2019onepixel}.
+Relative to the broader black-box attack literature, the project studies a narrower perturbation setting but asks a different question: whether explanation-derived guidance helps in a sparse regime.
+Relative to the explanation-robustness literature, the project does not attempt to characterise explanation fragility in full generality, but instead asks how explanation behaviour changes under successful one-pixel attacks and how that behaviour varies across attack procedures.
+
+The contribution boundary is therefore deliberately modest but clear.
+The report claims evidence about a fixed dataset, a fixed pretrained architecture, three explanation methods, and three attack configurations under a single-pixel black-box threat model.
+Within that scope, the project contributes a more integrated and auditable account of the relationship between sparse adversarial success, attack cost, and explanation behaviour than is typically found in a compact one-pixel reproduction study.

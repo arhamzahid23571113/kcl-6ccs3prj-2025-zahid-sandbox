@@ -1,0 +1,60 @@
+\section{Problem formulation}
+\label{sec:problem_formulation}
+
+This section formalises the research problem, the scope of the study, and the comparison logic used later in the report.
+The aim is not merely to run a one-pixel attack and report a success rate, but to define a controlled experimental setting in which attack effectiveness, explanation behaviour, and guidance trade-offs can be analysed together.
+
+\subsection{Problem statement}
+The central problem addressed by this project is that one-pixel adversarial attacks are usually discussed in terms of whether they succeed, but much less often in terms of what they do to post-hoc explanations and whether simple guidance priors genuinely improve the attack process.
+A successful one-pixel perturbation is interesting precisely because it is so sparse: if a classifier can be changed from a correct to an incorrect prediction by altering only one pixel, then the case provides a compact setting in which both adversarial vulnerability and explanation sensitivity can be studied.
+
+This leads to two linked questions.
+The first is explanatory: when a one-pixel attack succeeds, how much do common explanation methods change?
+The second is procedural: if the attack is guided toward pixels that the model already appears to consider important, does that guidance improve the success--cost trade-off?
+These questions are intentionally studied together rather than separately, because the choice of attack procedure can alter not only the success rate and query cost, but also the composition and explanation profile of the successful adversarial examples that are produced.
+
+\subsection{Research questions}
+The project is organised around two research questions:
+
+\begin{itemize}
+  \item \textbf{RQ1:} How do successful one-pixel attacks affect explanations?
+  \item \textbf{RQ2:} Can responsibility-map guidance improve one-pixel attacks?
+\end{itemize}
+
+RQ1 concerns explanation robustness under successful attack.
+The aim is to measure how much explanation maps change when the model's prediction is changed by a one-pixel perturbation.
+RQ2 concerns attack design.
+The aim is to test whether a black-box saliency prior can improve attack behaviour in a useful sense, especially in terms of attack success rate and query efficiency, and whether it changes the explanation profile of successful cases.
+
+\subsection{Threat model and assumptions}
+The attacker is black-box: model parameters and gradients are unavailable, and the attack interacts with the classifier only through forward queries that return output scores.
+The perturbation budget is restricted to exactly one pixel location, although all three RGB channel values at that location may be changed.
+This is a deliberately strict threat model.
+It isolates sparse black-box optimisation in a low-dimensional search space and makes the resulting perturbation straightforward to inspect.
+
+A further assumption of the study is that explanation methods are treated as post-hoc diagnostic tools rather than as ground-truth descriptions of model reasoning.
+Accordingly, changes in Grad-CAM, Integrated Gradients, or RISE should not be interpreted as direct proof of an internal causal mechanism.
+Instead, they are used as measurable indicators of stability and faithfulness under perturbation.
+
+\subsection{Scope boundaries}
+The scope is intentionally controlled.
+All experiments use the CIFAR-10 test set with a fixed index range of 10{,}000 images and a fixed pretrained ResNet-20 classifier.
+An image is considered eligible if the clean model classifies it correctly, and attack success rates are computed over this eligible subset.
+The study does not attempt to establish universal claims about all datasets, all model families, or all adversarial budgets.
+Nor does it attempt to maximise attack performance across every possible hyperparameter configuration.
+
+The project also restricts explanation analysis to successful adversarial examples.
+This choice is reasonable for the two research questions, because RQ1 is explicitly about explanation behaviour under successful attack and RQ2 compares the explanation profile of successful cases produced by different attack variants.
+However, this choice also creates an important selection effect, which is acknowledged later in \Cref{sec:threats_to_validity}.
+
+\subsection{Success criteria and comparison logic}
+The project compares three attack configurations: an untargeted one-pixel Differential Evolution (DE) baseline, a fixed-budget fastprior multi-target variant, and a responsibility-map-guided DE variant using RISE-based guidance.
+The comparison is not based on a single headline number.
+Instead, attack variants are evaluated along three dimensions.
+
+First, \emph{effectiveness} is measured using attack success rate (ASR), computed over the eligible set.
+Second, \emph{cost} is measured in model queries, summarised using medians over both all eligible images and successful images.
+Third, \emph{explanation behaviour} is measured on successful adversarial examples using IoU@10, Spearman rank correlation, and deletion AUC.
+
+A guidance variant is only considered genuinely helpful if it improves the success--cost trade-off in a meaningful way, rather than preserving success while raising cost or improving explanation stability only by shifting the composition of successful cases toward a smaller or more selective subset.
+This comparison logic is important because it prevents the report from treating any isolated metric improvement as sufficient evidence of a better attack design.

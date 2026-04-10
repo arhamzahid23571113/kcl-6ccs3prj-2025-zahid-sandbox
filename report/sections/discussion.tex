@@ -1,0 +1,76 @@
+\section{Extended discussion}
+\label{sec:discussion}
+
+This section interprets the results in depth and relates them back to the research questions and broader literature.
+The main value of the experiments is not only that they produce numerical comparisons, but that they clarify what kinds of one-pixel success are being found and how those successes interact with explanation behaviour.
+
+\subsection{What RQ1 establishes about explanation robustness}
+RQ1 shows that successful one-pixel attacks are associated with explanation instability, but that this instability is not uniform across methods.
+Integrated Gradients remains substantially more stable than Grad-CAM and RISE in both top-ranked overlap and rank correlation, while deletion-based faithfulness deteriorates on average for all three explainers.
+This matters because it suggests that sparse adversarial perturbations do not merely change the final class label; they can also disrupt the attribution landscape used to interpret the model's behaviour.
+
+At the same time, the RQ1 findings should not be oversimplified.
+The results do not imply that one explanation method is universally ``correct'' and another is ``wrong''.
+Rather, they show that different explanation paradigms respond differently to the same successful adversarial perturbation.
+In this controlled setting, IG appears less sensitive to the perturbations that drive one-pixel attack success, whereas Grad-CAM and especially RISE exhibit larger changes.
+
+\subsection{Why Integrated Gradients is more stable in this setting}
+One plausible interpretation of IG's relative stability is methodological.
+IG attributes importance by integrating gradients along a path from a baseline input to the observed input.
+That process can smooth some of the volatility that might otherwise be seen in highly local or stochastic attribution methods.
+By contrast, Grad-CAM depends on gradients flowing through a late convolutional representation, which is spatially coarse and architecture-dependent, while RISE relies on random masking and aggregation, making it inherently stochastic and more exposed to variation in query-based saliency estimation.
+
+It would be too strong to claim that IG is therefore the ``best'' explanation method in general.
+However, under the specific perturbation regime studied here, IG's higher IoU@10 and Spearman correlation suggest that it is less disrupted by successful one-pixel adversarial changes than the alternatives tested.
+That is a meaningful empirical finding even if it is bounded to the present dataset, model, and evaluation protocol.
+
+\subsection{Why fastprior improves stability but hurts success and cost}
+The fastprior results illustrate an important trade-off.
+On successful cases, fastprior yields more stable explanations across all three explainers than the untargeted baseline.
+At first glance, this could appear attractive: a guidance-like prior seems to produce successful adversarial examples whose explanation maps change less dramatically.
+However, this apparent benefit comes with two large costs: much lower image-wise success rate and much higher query expenditure.
+
+The most plausible interpretation is that fastprior is constraining the search more strongly than the untargeted baseline and therefore finding a smaller, more selective family of successful examples.
+Those examples may be more ``structured'' in the sense that they stay closer to existing salient regions or more stable explanation configurations, but the search pays for that selectivity by failing on far more images and by expending a large fixed budget per image.
+In other words, fastprior does not make the attack broadly better; it makes the set of successful attacks narrower and more expensive.
+
+This matters for evaluation because a naive reading of the explanation metrics might over-reward fastprior.
+If only explanation stability on successes is considered, fastprior looks stronger.
+But once success rate and cost are included, the overall picture changes.
+The correct interpretation is therefore not that fastprior improves one-pixel attacks in general, but that it shifts the balance toward a smaller, costlier, and more explanation-stable success subset.
+
+\subsection{Why RISE-guided DE does not improve the success--cost frontier}
+The RISE-guided variant is the most informative result for RQ2 because it tests the intuitive idea that black-box saliency should help a black-box sparse attack.
+The intuition is appealing: if the model already appears to rely on certain pixels or regions, then focusing the search there might reduce wasted queries and improve efficiency.
+The experiments do not support that expectation in the tested configuration.
+
+RISE-guided DE matches the untargeted baseline in image-wise success rate, but it does not improve overall median query cost and slightly worsens the median cost among successful attacks.
+This suggests that the saliency prior is not providing a more query-efficient route to misclassification.
+A likely reason is that a saliency map for the current prediction is not the same thing as a map of the best pixels to perturb for changing that prediction.
+Pixels that are important for explaining the existing class decision are not necessarily the pixels that provide the cheapest adversarial leverage in a one-pixel search.
+
+The guided variant also reduces RISE-based stability among successful adversarial examples while leaving Grad-CAM and IG almost unchanged relative to the baseline.
+That is noteworthy because the same method, RISE, is used both as a source of guidance and as one of the explanation methods being evaluated.
+A plausible interpretation is that guidance derived from a stochastic black-box saliency estimate introduces its own bias into the search without producing a strong enough efficiency gain to justify that bias.
+
+\subsection{Composition effects in successful adversarial subsets}
+One of the most important interpretive points in the report is that explanation metrics are computed on successful adversarial examples only.
+This means that changes in explanation stability across attack variants do not necessarily reflect only the effect of the perturbation mechanism itself.
+They also reflect \emph{which} examples each attack succeeds on.
+An attack that succeeds on a smaller or more selective subset may look better or worse on explanation metrics simply because its successful cases are not distributed in the same way as another attack's successful cases.
+
+This issue is especially visible in the fastprior comparison.
+Its stronger explanation stability on successful cases does not mean that it has discovered a uniformly superior attack procedure.
+Rather, it likely means that the attack's fixed-budget, prior-constrained design succeeds on a narrower family of images for which successful adversarial perturbations happen to preserve more of the original explanation structure.
+Recognising this composition effect prevents an over-interpretation of the explanation metrics.
+
+\subsection{What the project contributes beyond reproduction}
+The project is not merely a reimplementation of the original one-pixel attack.
+Its main contribution is to connect three things within one controlled and reproducible framework: sparse black-box attack evaluation, explanation robustness analysis, and black-box guidance testing.
+That combined framing is important because these questions are often studied separately.
+By holding the dataset, model, evaluation index set, and reporting pipeline fixed, the project makes it possible to compare attack success, cost, and explanation behaviour together rather than as disconnected observations.
+
+A second contribution is methodological.
+The report does not rely on manually copied numbers or informal summaries.
+Instead, it uses a frozen results pack, generated plots, generated tables, and explicit evidence mapping.
+This does not by itself make the scientific conclusions stronger, but it does make the report more auditable and increases confidence that the final claims are grounded in stable artefacts rather than ad hoc transcription.

@@ -1,34 +1,65 @@
-\section{Conclusions and future work}
+\section{Conclusion and future work}
 \label{sec:conclusion}
 
-This project investigated one-pixel adversarial attacks on image classifiers under a black-box threat model, with two research questions: (RQ1) how successful one-pixel attacks affect explanation stability and deletion-based faithfulness, and (RQ2) whether responsibility-map guidance improves the success--cost trade-off and how it affects explanation stability among successful adversarial examples.
+This project investigated one-pixel adversarial attacks on image classifiers under a black-box threat model, with two linked aims:
+first, to study how successful one-pixel attacks affect post-hoc explanations; and second, to test whether responsibility-map guidance improves one-pixel search in a meaningful empirical sense.
+The work was designed as a controlled, reproducible experimental study rather than as a search for the strongest possible attack under every configuration.
 
-\subsection{Summary of findings}
+\subsection{Answer to RQ1}
+RQ1 asked how successful one-pixel attacks affect explanations.
+The results show that successful one-pixel adversarial examples are associated with measurable explanation change under all three explanation methods considered.
+Integrated Gradients is the most stable method under the present evaluation protocol, both in top-ranked overlap and in rank correlation.
+Grad-CAM is less stable, and RISE is least stable in rank-correlation terms.
+Deletion-based faithfulness also decreases on average for all three methods under successful attack.
 
-\textbf{RQ1 (effect on explanations).}
-Across successful one-pixel adversarial examples, explanation stability decreases relative to the clean input for all three methods studied (Grad-CAM, Integrated Gradients, and RISE), and deletion-based faithfulness also degrades on average.
-Integrated Gradients is the most stable explanation method under this evaluation protocol, while Grad-CAM and RISE show larger changes in top-ranked pixels and attribution ordering.
+The main conclusion from RQ1 is therefore not simply that explanations ``change,'' but that explanation robustness under sparse adversarial perturbation is clearly method-dependent.
+A successful one-pixel perturbation can leave one explanation method relatively stable while shifting another more substantially.
+That makes explanation choice an important part of adversarial analysis rather than a neutral visualisation decision.
 
-\textbf{RQ2 (guidance vs baseline).}
-Three attack configurations were compared at 10k scale: untargeted Differential Evolution (DE), a fastprior multi-target variant, and RISE-guided DE.
-The untargeted baseline achieves an image-wise success rate of 0.3774 on 9{,}213 eligible images, with median query cost 40{,}400 over all eligible images and 6{,}000 among successful attacks.
-Fastprior reduces image-wise success to 0.1422 and has a target-wise success rate of 1.8\% (1{,}482 successful targets out of 82{,}917 target attempts); its median query cost is 70{,}848 both overall and among successful images because of its fixed-budget design.
-RISE-guided DE attains the same image-wise success rate as untargeted DE (0.3774), with the same median overall query cost (40{,}400) and a slightly higher median successful query cost (6{,}400), suggesting that simple responsibility-map guidance does not improve efficiency in this configuration.
+\subsection{Answer to RQ2}
+RQ2 asked whether responsibility-map guidance can improve one-pixel attacks.
+The results show that the answer, in the tested configuration, is no in the strong sense of improving the overall success--cost frontier.
+The RISE-guided DE variant matches the untargeted baseline in image-wise success rate but does not reduce overall median query cost and slightly increases the median cost among successful attacks.
+Fastprior, meanwhile, improves explanation stability on its successful subset but does so together with substantially lower image-wise success and much higher cost.
 
-Among successful adversarial examples, fastprior yields higher explanation stability across all three explainers, whereas RISE-guided DE remains close to baseline for Grad-CAM and Integrated Gradients but lowers RISE-based stability.
-This indicates that guidance changes the \emph{distribution of successful cases}, which can affect explanation metrics even when the perturbation budget remains fixed to a single pixel.
+The main conclusion from RQ2 is therefore that guidance changes the \emph{type} of successful adversarial cases more readily than it improves the attack frontier itself.
+A saliency-derived prior may bias the search toward more explanation-stable successes, but that does not automatically make the attack procedure better.
+In the present benchmark setting, simple responsibility-map guidance is not enough to produce a cleaner success--cost trade-off than untargeted DE.
 
-\subsection{Limitations}
+\subsection{Overall contribution}
+The contribution of the project is not a new explanation method or a state-of-the-art black-box attack.
+Its main contribution is a tightly integrated comparative framework in which sparse adversarial success, query cost, explanation stability, and deletion-based faithfulness are analysed together on a fixed 10k evaluation set.
+That contribution is strengthened by the use of frozen artefacts, generated figures and tables, and explicit claims-to-evidence mapping, all of which improve auditability and reduce transcription risk.
 
-The evaluation uses a single dataset (CIFAR-10) and a fixed pretrained architecture, so results may not generalise to higher-resolution datasets, different model families, or other threat models.
-Explanation metrics are computed only on successful adversarial examples; therefore, stability and faithfulness estimates reflect both explanation sensitivity and the selection effects induced by each attack configuration.
+More broadly, the project helps clarify an important point that can be obscured in more compact attack studies:
+a one-pixel attack should not be judged only by whether it succeeds.
+It should also be judged by how it succeeds, what it costs, and what kind of explanation behaviour accompanies that success.
+
+\subsection{Main limitations}
+The conclusions are bounded by the scope of the evaluation.
+The experiments use one dataset, one main pretrained architecture, one sparse black-box threat model, and three explanation methods.
+Explanation analysis is performed on successful adversarial subsets only, which introduces selection and composition effects.
+The reported metrics are informative proxies rather than direct measures of internal model reasoning.
+These limitations do not remove the value of the findings, but they define the level at which the results should be interpreted.
 
 \subsection{Future work}
+There are several natural directions for future work.
 
-Future work can strengthen both the scientific conclusions and the practical utility of guidance:
-\begin{itemize}
-  \item \textbf{Broader model coverage:} replicate on additional CIFAR-10 architectures and at least one higher-resolution dataset to test whether the observed stability trends persist.
-  \item \textbf{Improved guidance mechanisms:} replace the current heuristic saliency integration with principled priors or hybrid objectives, for example multi-objective DE balancing target confidence and saliency alignment.
-  \item \textbf{Query-efficiency analysis:} characterise the full cost distribution, not only medians, including tail behaviour and early-stopping sensitivity.
-  \item \textbf{Robustness and defences:} evaluate whether standard robustness techniques such as adversarial training or input preprocessing change explanation stability under one-pixel attacks.
-\end{itemize}
+First, the strongest immediate extension is broader validation across additional architectures and at least one higher-resolution dataset.
+That would test whether the explanation-stability ordering and the guidance trade-offs observed here persist beyond the CIFAR-10/ResNet-20 setting.
+
+Second, guidance itself can be improved.
+The present report evaluates one simple black-box saliency prior.
+Future work could study more principled spatial priors, hybrid objectives, or multi-objective search procedures that balance adversarial confidence, cost, and explanation-aware constraints.
+
+Third, fuller distributional analysis would strengthen the understanding of attack cost.
+The report already uses medians and successful/all-image splits, but richer analysis of tails, failure modes, and class-conditional behaviour could reveal structure hidden by aggregate summaries.
+
+Finally, the interaction between adversarial robustness and explanation robustness deserves broader investigation.
+The present project shows that explanation behaviour can shift substantially under extremely sparse successful perturbations.
+A natural next question is whether defences or robustness-oriented training procedures change not only attack success, but also the stability and faithfulness of explanations under attack.
+
+\subsection{Final closing statement}
+Taken together, the results show that one-pixel attacks remain a valuable experimental lens for studying both adversarial vulnerability and explanation behaviour.
+In this benchmark setting, successful sparse black-box attacks are common enough to be meaningful, explanation robustness is clearly method-dependent, and simple saliency-based guidance does not improve the success--cost frontier.
+Those findings are modest in scope, but they are clear, reproducible, and empirically grounded.

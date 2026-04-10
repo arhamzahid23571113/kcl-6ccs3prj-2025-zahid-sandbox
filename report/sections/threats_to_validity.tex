@@ -1,0 +1,90 @@
+\section{Limitations and threats to validity}
+\label{sec:threats_to_validity}
+
+This section distinguishes the principal threats to validity and the main limitations of the study.
+Doing so is important because adversarial machine-learning results can appear more general or more conclusive than the underlying evidence really supports.
+The present project provides a controlled empirical study, not a universal theory of one-pixel attacks or explanation robustness.
+Its conclusions are therefore strongest when read at the level of the exact benchmark setting that was evaluated.
+
+\subsection{Construct validity}
+Construct validity concerns whether the quantities measured in the report adequately capture the concepts they are intended to represent.
+This is especially important in the present project because both ``explanation robustness'' and ``guidance quality'' are indirect constructs rather than directly observable ground truths.
+
+For explanation robustness, the report uses IoU@10, Spearman rank correlation, and deletion AUC.
+These are all reasonable and informative metrics, but each captures only one aspect of a larger idea.
+IoU@10 measures overlap of highly ranked pixels, not semantic equivalence of the full explanation.
+Spearman correlation measures agreement in attribution ordering, not whether the explanation is human-meaningful.
+Deletion AUC measures one operational notion of faithfulness, but it is still a proxy rather than a definitive measure of causal importance.
+As a result, the report should be read as analysing measurable properties of explanation outputs under attack, not as proving exactly how the classifier internally reasons.
+
+A second construct-validity issue concerns the use of RISE saliency as a responsibility map for guidance.
+A RISE map is an estimate of which pixels are influential for the model's \emph{current} prediction.
+That is not the same thing as a map of which pixel change yields the most query-efficient route to \emph{misclassification}.
+Therefore, a negative result for RISE-guided DE should be interpreted narrowly: it shows that this specific black-box saliency prior does not improve the success--cost frontier in the tested configuration.
+It does not prove that all explanation-guided one-pixel attacks must fail.
+
+\subsection{Internal validity}
+Internal validity concerns whether the reported outcomes genuinely arise from the experimental factors under study rather than from confounds in implementation, preprocessing, or aggregation.
+Several design choices strengthen internal validity in this project.
+The evaluated image range is fixed.
+The eligibility rule is fixed.
+The attack variants are compared on the same pretrained model and the same eligible subset.
+The explanation metrics are computed through a stable pipeline, and the final report imports generated artefacts rather than copying numbers manually.
+
+Even so, some internal-validity risk remains.
+The project depends on a multi-stage pipeline involving attacks, saved tensors, explanation generation, summary scripts, and report imports.
+Any complex experimental pipeline can contain silent implementation mistakes, schema mismatches, or device-specific quirks.
+The report mitigates these risks through sanity checks, smoke tests, fixed seeds, and frozen artefact traceability rather than through formal verification.
+That is appropriate for an individual research project, but it still means that the results ultimately rely on a carefully tested software artefact rather than a mathematically verified implementation.
+
+Another internal-validity consideration is comparison symmetry.
+Fastprior uses a fixed-budget multi-target design, while the untargeted and RISE-guided variants use adaptive stopping.
+This makes the comparison analytically useful, but not perfectly matched in optimisation structure.
+The report partially addresses this by separating median cost over all eligible images from median cost over successful images and by interpreting fastprior as a deliberately different trade-off point rather than as a drop-in replacement for untargeted DE.
+
+\subsection{External validity}
+The strongest limitation of the study is external validity.
+All main results are derived from a single dataset, CIFAR-10, and a single main classifier architecture, a pretrained ResNet-20.
+The perturbation budget is restricted to one pixel, and the threat model is black-box.
+These design choices are defensible because they produce a clear and tractable benchmark, but they also limit generalisation.
+
+The findings may not transfer directly to larger images, different architectures, different datasets, or other perturbation budgets.
+For example, a one-pixel perturbation on a $32\times 32$ CIFAR-10 image is a very different object from a one-pixel perturbation on a higher-resolution natural image.
+Likewise, responsibility-map guidance might behave differently in settings where spatial structure is richer, where the model architecture changes the saliency landscape, or where more than one pixel can be modified.
+The report therefore supports claims about a controlled benchmark setting, not about universal behaviour across computer vision systems.
+
+\subsection{Selection and composition effects}
+A particularly important limitation of the present design is that explanation metrics are computed only on successful adversarial examples.
+This is appropriate for the research questions, especially RQ1, but it introduces a selection effect.
+The explanation statistics do not describe all attacked images.
+They describe the subset on which the attack succeeds.
+
+This matters because different attack variants can succeed on different kinds of images.
+A guided attack may appear to produce more stable explanations not because the perturbation mechanism is inherently better, but because it succeeds on a narrower family of examples whose explanation maps are already less volatile under sparse perturbation.
+The report explicitly acknowledges this interpretation in the discussion chapter and avoids treating explanation stability improvements as automatically equivalent to a better attack.
+Still, the selection effect remains a genuine limitation, and it is one reason the explanation comparisons must be interpreted with caution.
+
+\subsection{Measurement and aggregation limitations}
+The report uses medians for attack cost because query distributions are skewed.
+This is a sensible choice, but medians do not fully describe distribution shape.
+Two runs can share the same median while differing in tail behaviour, variance, or failure-mode structure.
+Similarly, mean explanation metrics provide compact summaries, but they can hide heterogeneity across images or classes.
+
+The report partly compensates for this by reporting both means and medians for several key explanation quantities and by separating all-image versus successful-image cost summaries.
+However, the document still does not provide a full distributional analysis of costs or explanation metrics.
+That choice keeps the report focused, but it limits how much can be said about rare or extreme cases.
+
+\subsection{Summary of limitations}
+The main limitations of the study can therefore be summarised as follows:
+\begin{itemize}
+  \item explanation metrics are informative proxies rather than direct measurements of internal model reasoning;
+  \item the guidance result applies to one specific saliency-derived prior rather than to all possible guidance mechanisms;
+  \item the evaluation is limited to one dataset, one main architecture, and one sparse black-box threat model;
+  \item successful-only explanation analysis introduces genuine selection and composition effects;
+  \item summary statistics do not exhaustively characterise the full distributions of attack cost and explanation behaviour.
+\end{itemize}
+
+These limitations do not invalidate the project.
+Rather, they define the correct level of interpretation.
+The report provides a controlled empirical account of one-pixel attacks, explanation robustness, and guidance trade-offs in a reproducible benchmark setting.
+Its conclusions are strongest within that scope.

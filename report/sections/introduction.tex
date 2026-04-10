@@ -1,34 +1,78 @@
 \section{Introduction}
 \label{sec:introduction}
 
-Adversarial examples demonstrate that modern image classifiers can be highly sensitive to carefully chosen perturbations.
-Even when the change to the input is very small, the model can produce a confidently incorrect prediction.
-This matters both scientifically, because it reveals properties of learned decision boundaries, and practically, because it exposes robustness risks in deployed machine learning systems.
+Modern image classifiers can achieve high benchmark accuracy while remaining unexpectedly vulnerable to carefully chosen perturbations.
+A small change to the input can be sufficient to change a confident correct prediction into a confident incorrect one, even when the perturbed image appears visually similar to the original \cite{szegedy2014intriguing,goodfellow2015explaining}.
+This matters both scientifically and practically.
+Scientifically, adversarial examples reveal that high predictive accuracy does not imply a stable or semantically robust decision boundary.
+Practically, they show that machine-learning systems can fail in ways that are difficult to anticipate from aggregate accuracy metrics alone.
 
-A particularly striking case is the \emph{one-pixel attack}, in which the adversary is restricted to modifying only a single pixel in the image \cite{su2019onepixel}.
-Although this perturbation budget is extremely small, the setting remains useful for two reasons.
-First, it provides a clean and interpretable black-box optimisation problem in a low-dimensional search space.
-Second, it offers a controlled way to study how post-hoc explanations behave when a classifier is changed from a correct to an incorrect decision by a minimal but successful perturbation.
+Within this broader literature, the one-pixel attack is especially striking.
+Rather than allowing a diffuse perturbation across many coordinates, it restricts the attacker to modifying only a single spatial location in the image \cite{su2019onepixel}.
+At first sight, this threat model may appear too narrow to matter.
+However, it is precisely this narrowness that makes the setting valuable.
+If a classifier can be changed by altering a single pixel, then the resulting adversarial example exposes a particularly sharp form of local instability.
+At the same time, the one-pixel setting is experimentally attractive because it yields a compact black-box optimisation problem in a low-dimensional search space.
+That makes it possible to study not only whether attacks succeed, but also how different search strategies and evaluation perspectives interact.
 
-This project studies one-pixel attacks on CIFAR-10 \cite{krizhevsky2009cifar} under a black-box threat model, using Differential Evolution (DE) as the optimisation backbone \cite{storn1997de}.
-Beyond attack success alone, the project evaluates the behaviour of three widely used explanation methods---Grad-CAM \cite{selvaraju2017gradcam}, Integrated Gradients (IG) \cite{sundararajan2017ig}, and RISE \cite{petsiuk2018rise}---under successful one-pixel adversarial perturbations.
-The report therefore addresses both adversarial effectiveness and explanation robustness in a single experimental framework.
+A second reason the one-pixel setting is useful is that it provides a controlled context in which to study post-hoc explanations.
+Explanation methods such as Grad-CAM, Integrated Gradients, and RISE are widely used to visualise which parts of an image appear influential for a model prediction \cite{selvaraju2017gradcam,sundararajan2017ig,petsiuk2018rise}.
+Yet the explanation literature has also shown that such methods can be noisy, fragile, or misleading if interpreted uncritically \cite{adebayo2018sanity,alvarezmelis2018robustness,ghorbani2019fragile}.
+A successful one-pixel adversarial example is therefore interesting for more than attack success alone.
+It provides a compact test case for asking whether the explanation attached to a prediction remains stable when the model is moved across a decision boundary by an extremely sparse perturbation.
+
+This project studies black-box one-pixel attacks on CIFAR-10 \cite{krizhevsky2009cifar} using Differential Evolution (DE) as the optimisation backbone \cite{storn1997de}.
+The work focuses on two linked questions.
+The first concerns explanation robustness: how explanation maps change when the attack succeeds.
+The second concerns guided attack design: whether a responsibility-map prior can improve one-pixel search in a useful sense.
+The responsibility map is estimated using RISE, which is itself a black-box explanation method \cite{petsiuk2018rise}.
+This is important because it keeps the guidance mechanism aligned with the black-box constraints of the attack.
+The project therefore studies adversarial effectiveness, query cost, and explanation behaviour within a single reproducible evaluation framework.
+
+\subsection{Motivation and problem context}
+The project is motivated by a gap between three strands of literature that are often discussed separately.
+The adversarial machine-learning literature has established that neural networks are vulnerable to carefully designed perturbations \cite{goodfellow2015explaining,madry2018towards}.
+The black-box attack literature has shown that many of these vulnerabilities remain relevant even when gradients or model parameters are unavailable \cite{papernot2017practical,chen2017zoo,brendel2018decision}.
+The explainable-AI literature has shown that post-hoc explanation methods can themselves be unstable or fragile under input changes \cite{adebayo2018sanity,ghorbani2019fragile,dombrowski2019explanations}.
+
+What is less often studied in an integrated way is the interaction between these strands in a tightly controlled sparse-budget setting.
+A one-pixel black-box attack is small enough to be interpretable and large enough to be meaningful.
+It allows the report to ask not only whether an attack can be made to work, but also what kind of successful cases it produces and how those successful cases affect explanation behaviour.
+This makes the project more than a reproduction of an established attack.
+It becomes a comparative study of sparse adversarial success, explanation robustness, and guidance trade-offs.
 
 \subsection{Research questions}
-\textbf{RQ1:} How do successful one-pixel attacks affect explanations? \\
-\textbf{RQ2:} Can responsibility-map guidance improve one-pixel attacks?
+The report is organised around two research questions:
+
+\begin{itemize}
+  \item \textbf{RQ1:} How do successful one-pixel attacks affect explanations?
+  \item \textbf{RQ2:} Can responsibility-map guidance improve one-pixel attacks?
+\end{itemize}
+
+RQ1 concerns the stability and faithfulness of explanations under successful attack.
+RQ2 concerns the usefulness of explanation-derived guidance as a spatial prior for sparse black-box search.
+Together, the two questions allow the report to examine both the \emph{outcomes} of one-pixel attacks and the \emph{quality} of the procedures used to obtain those outcomes.
 
 \subsection{Contributions}
 The main contributions of the project are as follows:
 \begin{itemize}
-  \item A reproducible 10k-scale study of black-box one-pixel attacks on CIFAR-10, covering an untargeted DE baseline, a fixed-budget fastprior multi-target variant, and a responsibility-map-guided DE variant.
-  \item A systematic analysis of explanation behaviour under successful adversarial perturbations using three explanation methods and three quantitative measures: IoU@10, Spearman rank correlation, and deletion AUC.
-  \item A report-ready experimental artefact pipeline, including frozen CSV outputs, comparison summaries, generated plots, and imported \LaTeX{} tables, so that the numbers reported in the final evaluation are traceable to fixed source artefacts.
+  \item A reproducible 10k-scale study of black-box one-pixel attacks on CIFAR-10 using a fixed pretrained classifier and a fixed eligible image subset.
+  \item A comparative evaluation of three attack configurations: an untargeted DE baseline, a fixed-budget fastprior multi-target variant, and a responsibility-map-guided DE variant.
+  \item A systematic analysis of explanation behaviour on successful adversarial examples using three explanation methods---Grad-CAM, Integrated Gradients, and RISE---and three quantitative measures: IoU@10, Spearman rank correlation, and deletion AUC.
+  \item A frozen results pack and report-oriented artefact pipeline in which final tables, plots, and summaries are generated from stable CSV artefacts rather than copied manually.
 \end{itemize}
 
+These contributions are deliberately bounded.
+The project does not claim to introduce a state-of-the-art black-box attack or a new explanation method.
+Its contribution is instead the integrated and auditable evaluation of sparse attack success, query cost, and explanation behaviour within one controlled framework.
+
 \subsection{Report structure}
-\Cref{sec:background} reviews the relevant background on adversarial examples, black-box attacks, responsibility-map guidance, and explanation methods.
-\Cref{sec:method} defines the threat model, attack variants, explanation methods, metrics, and experimental protocol.
-\Cref{sec:implementation} describes the software artefact and the reproducible pipeline used to generate the frozen results pack.
-\Cref{sec:evaluation} presents the experimental results and answers RQ1 and RQ2.
-Finally, \Cref{sec:conclusion} summarises the findings, limitations, and directions for future work.
+\Cref{sec:background} introduces the conceptual background needed for the study, including adversarial examples, black-box attack settings, sparse perturbations, and explanation methods.
+\Cref{sec:related_work} reviews the literature most directly related to the present project and clarifies the report's research positioning.
+\Cref{sec:problem_formulation} defines the problem, scope, threat model, and comparison logic.
+\Cref{sec:method} describes the dataset, model, attack variants, explanation methods, and metrics.
+\Cref{sec:implementation} presents the artefact architecture and the reproducible pipeline used to produce the frozen results pack.
+\Cref{sec:experimental_setup} describes the principal validity controls used in the study.
+\Cref{sec:results} reports the main empirical findings.
+\Cref{sec:discussion} interprets those findings in depth, while \Cref{sec:threats_to_validity} distinguishes the principal limitations of the study.
+Finally, \Cref{sec:conclusion} summarises the findings and outlines directions for future work.

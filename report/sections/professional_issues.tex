@@ -2,55 +2,70 @@
 \label{sec:professional_issues}
 
 This project studies adversarial examples and black-box attack procedures.
-That topic has clear professional implications because the same knowledge can be used either to improve robustness or to undermine deployed systems.
-The project therefore raises issues of dual use, responsible experimentation, data handling, reproducibility, resource use, and the careful communication of results.
+That topic has clear professional significance because the same technical knowledge can be used either to improve robustness or to support harmful misuse.
+The project therefore raises issues of dual use, responsible communication, data handling, research integrity, resource use, and dependence on third-party software.
 
 \subsection{Dual use and security relevance}
 Adversarial attack research is inherently dual use.
-On one hand, such work helps identify weaknesses in machine learning systems and supports the design of more robust models and evaluation practices.
-On the other hand, attack procedures may be reused in harmful settings.
-Black-box attacks are especially relevant because they do not require access to internal model parameters and therefore resemble realistic attacker capabilities more closely \cite{papernot2017practical}.
+On one hand, such work helps reveal weaknesses in machine-learning systems and supports the development of stronger evaluation practice and more robust models.
+On the other hand, the same techniques can be repurposed for malicious goals.
+This concern is especially relevant for black-box attacks, because black-box capabilities are often closer to what an external adversary could realistically possess \cite{papernot2017practical}.
 
-In this project, the work is framed as robustness analysis rather than operational misuse.
-Experiments are limited to a standard research benchmark, CIFAR-10, and a pretrained image classifier rather than a safety-critical or production deployment.
-The report focuses on transparent threat-model specification, explicit success criteria, and careful reporting of query cost so that the results support defensive understanding rather than exaggerated claims of practical exploitability.
+In this project, the work is framed explicitly as robustness analysis rather than operational misuse.
+The experiments are limited to a standard benchmark dataset and a pretrained classifier rather than a safety-critical deployed system.
+The report also emphasises transparent threat-model specification, explicit reporting of query cost, and careful discussion of limitations.
+That framing matters professionally because it avoids presenting attack success as a sensational result detached from context.
 
 \subsection{Responsible scope and communication}
-A professional report should communicate both capability and limitation.
-For that reason, the evaluation is deliberately scoped to a single dataset, a fixed model configuration, and a one-pixel threat model.
-The findings are presented as evidence about this controlled setting, not as a universal statement about all classifiers or all adversarial attack scenarios.
+A professional computing report must communicate both capability and limitation.
+For that reason, the report is careful not to overstate what the experiments establish.
+The findings concern one dataset, one main model family, a one-pixel black-box threat model, and a fixed set of explanation methods.
+They are not presented as universal truths about all classifiers or all interpretability methods.
 
-The report also avoids overstating what explanation changes mean.
-A change in a post-hoc explanation map does not by itself prove a causal mechanism inside the model.
-Accordingly, explanation metrics are treated here as diagnostic indicators of stability and faithfulness under perturbation, not as direct proof of model reasoning.
+This is especially important when discussing explanation change.
+A shift in a post-hoc explanation map does not by itself prove a causal theory of model reasoning.
+The report therefore treats explanation metrics as diagnostic measurements of stability and faithfulness under perturbation, not as definitive windows into the internal semantics of the model.
+That restraint is professionally important because the explainability literature is already prone to overclaiming.
 
 \subsection{Data, privacy, and consent}
-The experiments use CIFAR-10, a public benchmark dataset widely used in machine learning research \cite{krizhevsky2009cifar}.
-Within the scope of this project, no personal data is collected from users, no sensitive metadata is processed, and no human participants are involved.
-As a result, privacy and consent risks are minimal in the conducted experiments.
+The experiments use CIFAR-10, a public benchmark dataset widely used in machine-learning research \cite{krizhevsky2009cifar}.
+No personal user data is collected, no sensitive metadata is processed, and no human participants are involved.
+Within the scope of the conducted experiments, privacy and consent risks are therefore minimal.
 
-Even so, responsible data handling still matters.
-Using a public benchmark does not remove the obligation to document the data source clearly, state the experimental scope accurately, and avoid implying claims that the data cannot support.
+Even so, responsible data handling remains relevant.
+Public benchmark use does not remove the obligation to document the data source clearly, describe scope honestly, and avoid implying claims the dataset cannot support.
+This is especially relevant in adversarial ML, where visually compelling examples can create an exaggerated sense of real-world generality if the benchmark context is not stated clearly.
 
 \subsection{Reproducibility and research integrity}
 Research integrity is a central professional issue for experimental computing projects.
-The implementation is therefore structured around fixed evaluation indices, recorded run configurations, frozen result artefacts, and a report pipeline that imports generated figures and tables rather than copying numbers manually.
-This supports traceability from final claims back to concrete CSVs, logs, and summaries.
+The implementation is therefore structured around fixed evaluation indices, recorded run configurations, frozen result artefacts, and a report pipeline that imports generated tables and figures rather than copying values manually.
+This supports traceability from the final text back to concrete CSVs, summaries, and plots.
 
-The report also acknowledges external methods and datasets explicitly, including the one-pixel attack formulation \cite{su2019onepixel}, Differential Evolution \cite{storn1997de}, Grad-CAM \cite{selvaraju2017gradcam}, Integrated Gradients \cite{sundararajan2017ig}, RISE \cite{petsiuk2018rise}, and CIFAR-10 \cite{krizhevsky2009cifar}.
-Clear citation and separation between original contribution and prior work are essential to professional and academic practice.
+The report also clearly distinguishes between prior work and original contribution.
+The one-pixel attack formulation, DE, Grad-CAM, Integrated Gradients, RISE, and CIFAR-10 are all externally sourced and explicitly cited \cite{su2019onepixel,storn1997de,selvaraju2017gradcam,sundararajan2017ig,petsiuk2018rise,krizhevsky2009cifar}.
+The project's contribution lies in the specific comparative framing, the frozen artefact pipeline, and the integrated evaluation of sparse adversarial success, cost, and explanation behaviour.
+Maintaining that distinction is both academically and professionally necessary.
 
 \subsection{Compute cost and sustainability}
 Large-scale adversarial evaluation can be computationally expensive.
-The project therefore takes several steps to reduce unnecessary resource use: fixed evaluation indices, reusable frozen artefacts, early stopping where appropriate, and separation between attack generation and explanation generation so that expensive stages do not need to be repeated without reason.
+The project therefore takes several steps to reduce unnecessary waste: fixed evaluation indices, reusable frozen artefacts, early stopping where appropriate, separation of attack generation from explanation generation, and a report pipeline that avoids repeated recomputation during writing.
+These choices do not eliminate the environmental cost of compute, but they do reflect a professional obligation to plan experiments carefully and avoid avoidable reruns.
 
-This does not eliminate the environmental cost of compute, but it does reflect a professional obligation to plan experiments carefully and avoid wasteful reruns.
-In practice, the frozen results pack also reduces the need for repeated large-scale recomputation during report writing and revision.
+This issue is not merely logistical.
+Responsible computing increasingly includes attention to computational resource use.
+A professionally mature project should therefore consider not only whether an experiment is technically possible, but also whether it has been designed efficiently and reported in a way that preserves value from the compute already spent.
 
-\subsection{Licensing and third-party software}
-The artefact depends on third-party open-source software, including Python, PyTorch, and standard scientific computing libraries.
-These dependencies are treated as external tools rather than original contributions.
-A professional submission should therefore document them clearly, respect their licences, and avoid presenting dependency code as if it were authored within the project itself.
+\subsection{Dependence on third-party software and licences}
+The artefact depends on third-party open-source software, including Python, PyTorch, and supporting scientific libraries.
+These are external dependencies rather than original contributions.
+A professional submission must therefore document them clearly, respect their licences, and avoid presenting library functionality as if it had been authored within the project.
 
-More broadly, this project distinguishes between original work, reused libraries, benchmark datasets, and referenced research ideas.
-That distinction is important for attribution, reproducibility, and honest communication of what the project contributes.
+The same applies to reused research ideas and benchmark artefacts.
+The report distinguishes between original code, imported libraries, benchmark datasets, and cited methods.
+That distinction matters for attribution, reproducibility, and honest communication of what the project actually contributes.
+
+\subsection{Professional summary}
+The main professional issues in this project are therefore not incidental add-ons.
+They are part of the substance of the work.
+Adversarial research is dual use, explainability is easy to overclaim, and large-scale empirical computing must be reproducible and responsibly scoped.
+A professionally strong project in this area must therefore combine technical competence with careful framing, transparent evidence, and restraint in interpretation.

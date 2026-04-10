@@ -1,7 +1,7 @@
 \section{Implementation}
 \label{sec:implementation}
 
-This section describes the computing artefact produced for the project and the pipeline used to convert raw experiment outputs into the frozen results pack and the report-ready figures and tables used in \Cref{sec:evaluation}.
+This section describes the computing artefact produced for the project and the pipeline used to convert raw experiment outputs into the frozen results pack and the report-ready figures and tables used in \Cref{sec:results}.
 The implementation is designed as a reproducible research toolkit rather than as a single monolithic script.
 That design choice matters because the project is not only about obtaining attack results; it is also about ensuring that those results can be regenerated, checked, and traced back to stable intermediate artefacts.
 
@@ -45,7 +45,7 @@ Attacks are executed through a common runner that loads the model and dataset, f
 For untargeted runs, the output CSV includes the image index, clean prediction, success flag, generations used, query count, and the best one-pixel parameters $(x,y,r,g,b)$.
 For multi-target runs, the output also records target-level information used to reconstruct image-wise and target-wise success.
 
-For the frozen 10k-scale experiments used in \Cref{sec:evaluation}, the principal raw attack artefacts are:
+For the frozen 10k-scale experiments used in \Cref{sec:results}, the principal raw attack artefacts are:
 \begin{itemize}
   \item \texttt{results/attacks/de1px\_untargeted\_10000.csv}
   \item \texttt{results/attacks/de1px\_targeted\_fastprior\_10000.csv}

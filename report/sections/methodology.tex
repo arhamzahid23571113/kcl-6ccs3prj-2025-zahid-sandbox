@@ -1,0 +1,130 @@
+\section{Methodology}
+\label{sec:method}
+
+This chapter defines the experimental methodology used to answer the research questions.
+The emphasis is on controlled comparison rather than on maximising the performance of any one attack variant in isolation.
+To make the results interpretable, the study fixes the dataset, classifier, eligibility rule, and reporting pipeline, and then varies the attack procedure while holding the rest of the evaluation framework constant.
+
+\subsection{Methodological overview}
+The methodology is designed around three linked evaluation axes.
+The first is \emph{attack effectiveness}: whether a one-pixel perturbation can overturn a correct clean prediction.
+The second is \emph{attack cost}: how many model queries are required to obtain that outcome.
+The third is \emph{explanation behaviour}: how explanation maps change between clean and adversarial inputs when the attack succeeds.
+
+This three-way framing matters because a guidance strategy could appear useful under one axis while failing under another.
+For example, a guided attack could produce more stable explanations on its successful cases while simultaneously lowering the overall success rate or increasing query cost.
+The methodology therefore treats attack variants as comparable only when success, cost, and explanation behaviour are considered together.
+
+\subsection{Dataset, model, and preprocessing}
+All experiments use the CIFAR-10 test set \cite{krizhevsky2009cifar}, restricted to the fixed index range 0--9{,}999.
+Using a fixed 10k index set keeps the evaluation stable across reruns and avoids ambiguity about which data slice the final report refers to.
+The classifier is a pretrained CIFAR-10 ResNet-20 variant, used unchanged throughout the study.
+
+Inputs are $32 \times 32$ RGB images, and the same preprocessing and normalisation pipeline is applied across all runs.
+An image is considered \emph{eligible} if the clean model classifies it correctly.
+This eligibility rule is important because the attack is intended to overturn an initially correct prediction rather than merely produce an arbitrary output on an already misclassified image.
+All attack success rates reported later are therefore computed over the eligible subset rather than over the full 10k image range.
+
+\subsection{Threat model}
+The attacker is black-box: model parameters, gradients, and internal activations are unavailable.
+The attack may interact with the classifier only through forward queries that return output scores.
+The perturbation budget is restricted to one pixel location.
+An adversarial example therefore differs from the clean image at exactly one coordinate $(x,y)$, although all three RGB values at that location may be changed.
+
+This threat model is intentionally narrow.
+Its purpose is not to emulate every realistic adversarial scenario, but to isolate sparse black-box optimisation in a setting where the perturbation is easy to inspect and the search space remains compact.
+Within this model, the cost of an attack is measured in \emph{queries}, where one query corresponds to one forward evaluation of the classifier on a candidate perturbed image.
+
+\subsection{Attack parameterisation}
+All attack variants are based on the one-pixel formulation introduced by Su et al.\ \cite{su2019onepixel} and use Differential Evolution (DE) as the optimisation backbone \cite{storn1997de}.
+A candidate solution encodes five continuous quantities: a pixel position $(x,y)$ and colour values $(r,g,b)$.
+DE evolves a population of such candidates through mutation, crossover, and selection.
+
+This parameterisation is suitable for the one-pixel setting for two reasons.
+First, it is naturally derivative-free and therefore compatible with the black-box constraint.
+Second, it turns the attack into a bounded low-dimensional search problem in which different search priors can be compared cleanly.
+The report studies three attack configurations under this common representation.
+
+\subsection{Untargeted one-pixel DE baseline}
+The first configuration is an untargeted DE baseline.
+Its objective is to induce any misclassification with a one-pixel change.
+For the frozen 10k-scale run used in the report, the configuration uses population size 400, differential weight $F=0.5$, crossover rate $Cr=0.9$, maximum generations 100, early-stopping thresholds \texttt{es\_target}=0.9 and \texttt{es\_nonadv}=0.05, and random seed 1337.
+
+This baseline plays two roles.
+For RQ1, it defines the successful adversarial subset on which explanation changes are first analysed.
+For RQ2, it provides the main unguided reference point against which the guided variants are compared.
+The output records, for each image, the success flag, generation count, query count, and the best one-pixel parameters found.
+
+\subsection{Fastprior multi-target DE}
+The second configuration is a fixed-budget multi-target variant referred to as \emph{fastprior}.
+Instead of attempting only an untargeted label change, the attack considers labels different from the clean prediction and runs DE with a fixed budget per target.
+For the frozen 10k-scale run, the recorded configuration uses \texttt{pop}=192, maximum generations $=40$, $F=0.5$, $Cr=0.9$, \texttt{es\_target}$=0.9$, \texttt{xy\_topk}$=32$, \texttt{xy\_mutate\_prob}$=0.1$, and seed 1337.
+
+This variant is useful because it changes the structure of the search itself.
+Its near-constant query cost reflects the fixed-budget design, and its multi-target framing allows both image-wise and target-wise success to be measured.
+The resulting trade-off is analytically interesting even if the configuration is not competitive with the untargeted baseline in headline efficiency.
+
+\subsection{Responsibility-map-guided DE}
+The third configuration is a responsibility-map-guided DE variant.
+Here, the attack uses a black-box saliency prior derived from RISE \cite{petsiuk2018rise} to bias which pixel locations are explored during DE.
+The purpose is not to change the one-pixel budget, but to change where the search spends effort.
+If pixels that are influential for the current prediction are also useful places to perturb, then such guidance may improve the success--cost trade-off.
+
+This is an empirical proposition rather than a guaranteed one.
+A saliency map explains the current decision, not necessarily the cheapest route to changing that decision.
+The guided variant therefore tests whether an intuitively appealing prior is actually useful under the constraints of sparse black-box search.
+
+\subsection{Explanation methods}
+To analyse explanation behaviour, three explanation methods are computed for paired clean and adversarial inputs:
+
+\begin{itemize}
+  \item \textbf{Grad-CAM} \cite{selvaraju2017gradcam}, which produces a class-specific localisation map using gradients over a late convolutional representation;
+  \item \textbf{Integrated Gradients (IG)} \cite{sundararajan2017ig}, which computes attributions by integrating gradients from a baseline input to the observed input;
+  \item \textbf{RISE} \cite{petsiuk2018rise}, which estimates black-box saliency by random masking and aggregation.
+\end{itemize}
+
+These methods are intentionally heterogeneous.
+Grad-CAM is spatially coarse and architecture-dependent.
+IG is gradient-based and path-dependent.
+RISE is black-box, stochastic, and query-based.
+Together they provide a useful spread of explanation paradigms for testing whether explanation changes under attack are method-specific or broadly shared.
+
+\subsection{Metrics}
+\subsubsection{Attack effectiveness}
+The principal effectiveness metric is \emph{attack success rate} (ASR), computed over the eligible subset.
+For fastprior, two effectiveness views are relevant: image-wise success, which asks whether at least one target succeeds for an image, and target-wise success, which counts successful targets across all target attempts.
+
+\subsubsection{Attack cost}
+Attack cost is measured in model queries.
+The report emphasises median query counts over both all eligible images and successful images.
+This is preferable to a mean-only summary because cost distributions in adversarial search are often skewed and can be heavily influenced by failures or long tails.
+
+\subsubsection{Explanation stability}
+Explanation stability is measured on successful adversarial examples using two complementary statistics:
+
+\begin{itemize}
+  \item \textbf{IoU@10}, the intersection-over-union of the top-$k$ salient pixels before and after attack, with $k=10$;
+  \item \textbf{Spearman rank correlation} $\rho$, computed between flattened before/after attribution maps.
+\end{itemize}
+
+IoU@10 captures whether the most salient pixels remain similar, while Spearman $\rho$ captures whether the broader attribution ordering remains similar.
+Using both helps reduce the risk that one metric alone overstates or understates stability.
+
+\subsubsection{Explanation faithfulness}
+Faithfulness is assessed using deletion AUC.
+Pixels are removed in descending order of saliency, and the classifier score for the relevant class is tracked as more of the image is deleted.
+The report presents clean and adversarial deletion AUC values together with the difference $\Delta$ deletion AUC (adversarial minus clean).
+A more negative value indicates a larger reduction in the measured faithfulness of the explanation under attack.
+
+\subsection{Aggregation protocol}
+All runs use the same fixed 10k image range, and eligibility is determined once using the clean model.
+Attack metrics are computed over the resulting eligible subset.
+Explanation metrics are computed only on successful adversarial examples.
+This means that explanation comparisons reflect both the perturbation mechanism and the composition of the successful subset produced by each attack.
+That selection effect is not an accident of the analysis but part of the phenomenon being studied, although it must also be interpreted carefully later in \Cref{sec:threats_to_validity}.
+
+\subsection{Frozen artefacts and report consistency}
+To keep the report internally consistent, all final numbers are taken from the frozen results pack under \texttt{results/final\_pack/}.
+The tables and plots used in the report are generated from stable CSV artefacts rather than copied manually.
+This makes the report easier to audit and reduces the risk of transcription error.
+The methodology therefore supports not only controlled comparison but also traceable reporting.

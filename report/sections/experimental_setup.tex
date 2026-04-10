@@ -1,0 +1,61 @@
+\section{Experimental setup and validity controls}
+\label{sec:experimental_setup}
+
+This section describes the execution environment and the principal controls used to support fair comparison and credible interpretation.
+The project is an experimental computing study, so the reliability of the final claims depends not only on the numerical outputs but also on the consistency of the evaluation pipeline that produced them.
+
+\subsection{Execution environment}
+Development and report writing were carried out on a macOS workstation, while the large 10k-scale runs used for the frozen results pack were executed in a CUDA-enabled GPU environment.
+The implementation is written in Python and relies on PyTorch together with supporting scientific libraries.
+The same codebase is structured so that most stages can run on CPU or GPU depending on the selected device, while the frozen large-scale outputs reported in the results chapter come from the GPU-backed runs.
+
+Separating local development from large-scale execution was useful for two reasons.
+First, it allowed rapid debugging, smoke testing, and figure generation locally.
+Second, it allowed the final experimental runs to be produced in a compute environment better suited to large attack and explanation workloads.
+This reduced the risk that the final reported numbers would depend on an ad hoc or unstable execution path.
+
+\subsection{Fixed seeds and deterministic choices}
+The frozen runs use fixed random seeds, most notably seed 1337 for the main 10k-scale experiments.
+This does not imply that the wider problem is fully deterministic, especially for stochastic procedures such as population-based search or perturbation-based saliency estimation.
+However, it does ensure that the specific results pack used by the report is internally consistent and can be regenerated under the same configuration.
+
+In addition to fixed seeds, the evaluation uses a fixed image index range of 0--9{,}999, a fixed eligibility rule based on clean-model correctness, and fixed aggregation definitions for success rates, query medians, and explanation metrics.
+These choices help separate substantive experimental differences from incidental variation introduced by changing data slices or analysis conventions.
+
+\subsection{Eligibility filtering and evaluation set consistency}
+An image is considered eligible if it is classified correctly by the clean model.
+This yields 9{,}213 eligible images from the fixed 10{,}000-image evaluation index range.
+Using a single eligibility filter across all attack variants is important for comparison fairness.
+It prevents one attack from being evaluated on a more favourable subset than another and ensures that attack success always means overturning a genuinely correct clean prediction.
+
+This consistent eligible subset is also important for explanation analysis.
+When explanation metrics are reported on successful adversarial examples, those successful examples are all drawn from the same underlying eligible pool.
+That does not remove composition effects across attack variants, but it does ensure that the base evaluation set itself is held fixed.
+
+\subsection{Sanity checks and smoke tests}
+Before the expensive large-scale runs were executed, the implementation was checked through several smaller validation steps.
+Baseline sanity checks were used to confirm that the model and dataset pipeline behaved plausibly on fixed subsets.
+Attack smoke tests were run on small index lists to catch configuration, schema, or device issues before committing to the full 10k-scale experiments.
+Explanation generation was likewise tested on small runs before the full clean/adversarial comparison pipeline was executed.
+
+These checks serve a practical role in experimental reliability.
+They do not prove the implementation is perfect, but they reduce the chance that the final results are produced by a single brittle run with undetected errors in configuration or data handling.
+
+\subsection{Metric verification}
+The metrics used in the study were also checked in controlled ways before inclusion in the final report.
+Overlap- and rank-based stability measures were inspected on smaller examples to ensure that IoU@10 and Spearman correlation behaved plausibly.
+Deletion-based faithfulness summaries were similarly checked to verify that the computation produced sensible directional outputs when applied to clean/adversarial pairs.
+
+The report also relies on generated artefacts rather than manual transcription.
+Plots, summary tables, and imported \LaTeX{} tables are produced from CSV intermediates in the frozen results pack.
+This lowers the risk of copy-and-paste mistakes and supports a clearer evidence chain from raw outputs to the final claims reported in \Cref{sec:results}.
+
+\subsection{Comparison fairness and internal validity controls}
+Three further controls matter for internal validity.
+First, all attack variants are evaluated against the same model and the same eligible subset.
+Second, the same family of explanation methods and the same metric definitions are applied across runs.
+Third, the report distinguishes between medians over all eligible images and medians over successful images, which prevents the cost analysis from collapsing different cases into a single potentially misleading summary.
+
+At the same time, not all comparisons are perfectly symmetric.
+The fastprior configuration uses a fixed-budget multi-target design, whereas the untargeted and RISE-guided variants use adaptive stopping behaviour.
+For that reason, the report interprets query comparisons carefully and treats guidance as beneficial only when it yields a meaningful empirical advantage rather than a superficial metric improvement.
