@@ -1,110 +1,295 @@
 \section{Implementation}
 \label{sec:implementation}
 
-This section describes the computing artefact produced for the project and the pipeline used to convert raw experiment outputs into the frozen results pack and the report-ready figures and tables used in \Cref{sec:results}.
-The implementation is designed as a reproducible research toolkit rather than as a single monolithic script.
-That design choice matters because the project is not only about obtaining attack results; it is also about ensuring that those results can be regenerated, checked, and traced back to stable intermediate artefacts.
+This section describes the computing artefact produced for the project and the pipeline used to
+convert raw experiment outputs into the frozen results pack and the report-ready figures and
+tables used in \Cref{sec:results}. The implementation is designed as a reproducible research
+toolkit rather than as a single monolithic script. That design choice matters because the
+project is not only about obtaining attack results; it is also about ensuring that those results
+can be regenerated, checked, and traced back to stable intermediate artefacts.
 
 \subsection{Artefact view}
-The implemented artefact is an end-to-end software pipeline for black-box one-pixel attack evaluation.
-At a high level, the pipeline consists of four stages:
+The implemented artefact is an end-to-end software pipeline for black-box one-pixel attack
+evaluation. At a high level, the pipeline consists of four stages:
 \begin{enumerate}
   \item loading the dataset and model and determining the eligible image subset;
   \item generating one-pixel adversarial examples under a selected attack mode;
   \item computing explanations and explanation-derived metrics on clean/adversarial pairs;
   \item aggregating the outputs into summaries, plots, and \LaTeX{} tables for the final report.
 \end{enumerate}
-This structure follows the artefact-oriented design set out in the BSPR: attacks produce structured outputs, later stages consume those outputs through stable file interfaces, and the final report imports generated artefacts rather than hand-copied numbers.
+This structure follows the artefact-oriented design set out in the BSPR: attacks produce
+structured outputs, later stages consume those outputs through stable file interfaces, and the
+final report imports generated artefacts rather than hand-copied numbers.
+
+\begin{figure}[tbp]
+\centering
+\begin{tikzpicture}[
+  scale=0.90,
+  transform shape,
+  node distance=0.50cm,
+  box/.style={
+    draw,
+    rounded corners,
+    align=center,
+    text width=9.2cm,
+    minimum height=0.78cm,
+    inner sep=4pt,
+    font=\footnotesize
+  },
+  arrow/.style={-{Latex[length=1.8mm]}, thick}
+]
+\node[box] (data) {CIFAR-10 test set, pretrained classifier, and optional fixed index list};
+\node[box, below=of data] (eligible) {Eligibility filtering on clean predictions};
+\node[box, below=of eligible] (attack) {Attack runner: untargeted DE, RISE-guided DE,
+targeted sweep, or multi-target prior-guided DE};
+\node[box, below=of attack] (artefacts) {Attack artefacts: per-run CSV outputs and optional
+saved adversarial tensors};
+\node[box, below=of artefacts] (expl) {Explanation runner: Grad-CAM, IG, and RISE on
+clean/adversarial pairs with before-vs-after metric CSVs};
+\node[box, below=of expl] (summary) {Summary and export stage: plots, Markdown narratives,
+and report-ready \LaTeX{} tables};
+\node[box, below=of summary] (final) {Frozen final pack and imported report assets};
+
+\draw[arrow] (data) -- (eligible);
+\draw[arrow] (eligible) -- (attack);
+\draw[arrow] (attack) -- (artefacts);
+\draw[arrow] (artefacts) -- (expl);
+\draw[arrow] (expl) -- (summary);
+\draw[arrow] (summary) -- (final);
+\end{tikzpicture}
+\caption{Top-level implementation pipeline. Eligibility filtering, attack execution, explanation
+computation, and export are separated into distinct stages connected by stable artefacts.}
+\label{fig:impl_pipeline}
+\end{figure}
 
 \subsection{Repository structure}
-The implementation is organised to separate reusable components, experiment entry points, raw outputs, and report assets:
+The implementation is organised to separate reusable components, experiment entry points, raw
+outputs, and report assets:
 \begin{itemize}
-  \item \texttt{scripts/}: command-line entry points for running attacks, computing explanations, aggregating results, and exporting report-ready artefacts.
+  \item \texttt{scripts/}: command-line entry points for running attacks, computing explanations,
+  aggregating results, and exporting report-ready artefacts.
   \item \texttt{attacks/}: reusable implementations of DE-based one-pixel search variants.
-  \item \texttt{explanations/}: explanation methods and utilities for Grad-CAM, IG, RISE, and downstream metric computation.
-  \item \texttt{results/}: experiment outputs including CSVs, logs, plots, summaries, and the frozen final pack under \texttt{results/final\_pack/}.
-  \item \texttt{report/}: the \LaTeX{} report together with imported figures and tables derived from the frozen final pack.
+  \item \texttt{explanations/}: explanation methods and utilities for Grad-CAM, IG, RISE, and
+  downstream metric computation.
+  \item \texttt{results/}: experiment outputs including CSVs, logs, plots, summaries, and the
+  frozen final pack under \texttt{results/final\_pack/}.
+  \item \texttt{report/}: the \LaTeX{} report together with imported figures and tables derived
+  from the frozen final pack.
 \end{itemize}
 
-This separation reduces accidental coupling between exploratory experimentation and the final report.
-It also makes partial recomputation practical: for example, explanation summaries can be regenerated from frozen attack outputs without rerunning the attack itself.
+This separation reduces accidental coupling between exploratory experimentation and the final
+report. It also makes partial recomputation practical: explanation summaries can be regenerated
+from frozen attack outputs without rerunning the attack stage, while the report can be rebuilt
+from imported assets without manually copying numerical results.
+
+\begin{figure}[tbp]
+\centering
+\begin{tikzpicture}[
+  scale=0.92,
+  transform shape,
+  node distance=0.8cm and 0.9cm,
+  box/.style={
+    draw,
+    rounded corners,
+    align=center,
+    minimum height=0.85cm,
+    inner sep=4pt,
+    font=\footnotesize
+  },
+  arrow/.style={-{Latex[length=1.8mm]}, thick}
+]
+\node[box, text width=4.9cm] (scripts) {\texttt{scripts/}\\CLI orchestration};
+\node[box, below left=of scripts, text width=4.9cm] (attacks) {\texttt{attacks/}\\DE search
+implementations};
+\node[box, below right=of scripts, text width=4.9cm] (expl) {\texttt{explanations/}\\attribution
+methods and metrics};
+\node[box, below=1.15cm of scripts, text width=6.2cm] (results) {\texttt{results/}\\raw outputs,
+logs, plots, summaries, frozen final pack};
+\node[box, below=of results, text width=6.2cm] (report) {\texttt{report/}\\imports frozen figures
+and tables};
+
+\draw[arrow] (scripts) -- (attacks);
+\draw[arrow] (scripts) -- (expl);
+\draw[arrow] (scripts) -- (results);
+\draw[arrow] (attacks) -- (results);
+\draw[arrow] (expl) -- (results);
+\draw[arrow] (results) -- (report);
+\end{tikzpicture}
+\caption{Logical repository organisation and dependency direction. Scripts orchestrate
+experiments, reusable modules implement attacks and explanations, results are frozen as
+artefacts, and the report imports generated assets from those artefacts.}
+\label{fig:impl_repo}
+\end{figure}
 
 \subsection{CLI and stable interfaces}
-A key implementation goal is repeatability.
-The artefact therefore exposes command-line entry points for the major pipeline stages rather than relying on ad hoc notebooks or manual file editing.
-In practice, the workflow is organised around commands that evaluate the baseline model, run one-pixel attacks, compute explanations, and summarise results into report-ready outputs.
+A key implementation goal is repeatability. The artefact therefore exposes command-line entry
+points for the major pipeline stages rather than relying on ad hoc notebooks or manual file
+editing. In practice, the workflow is organised around commands that evaluate the baseline
+model, run one-pixel attacks, compute explanations, and summarise results into report-ready
+outputs.
 
-Equally important is the use of stable file contracts between stages.
-Attack scripts write structured CSV outputs and, when required, adversarial tensors.
-Explanation scripts consume those artefacts and write ``before vs after'' CSVs.
-Summary scripts then aggregate those files into plots, markdown summaries, and \LaTeX{} tables.
-This file-based design makes later stages less fragile and allows expensive stages to be reused without recomputation.
+Equally important is the use of stable file contracts between stages. Attack scripts write
+structured CSV outputs and, when required, adversarial tensors. Explanation scripts consume
+those artefacts and write ``before vs after'' CSVs. Summary scripts then aggregate those files
+into plots, Markdown summaries, and \LaTeX{} tables. This file-based design makes later stages
+less fragile and allows expensive stages to be reused without recomputation.
 
 \subsection{Attack pipeline}
-Attacks are executed through a common runner that loads the model and dataset, filters the evaluation set to eligible images, applies the chosen one-pixel optimisation procedure, and records per-image outputs.
-For untargeted runs, the output CSV includes the image index, clean prediction, success flag, generations used, query count, and the best one-pixel parameters $(x,y,r,g,b)$.
-For multi-target runs, the output also records target-level information used to reconstruct image-wise and target-wise success.
+Attacks are executed through a common runner that loads the model and dataset, filters the
+evaluation set to eligible images, applies the selected one-pixel optimisation procedure, and
+records per-image outputs. The implementation exposes several attack modes. Untargeted and
+RISE-guided runs share one runner path, the targeted sweep executes a per-target loop with the
+vanilla DE implementation, and the fastprior and Grad-CAM-prior modes use a vectorised
+multi-target runner.
 
-For the frozen 10k-scale experiments used in \Cref{sec:results}, the principal raw attack artefacts are:
+For untargeted and guided runs, the output CSV records the dataset index, clean prediction,
+success flag, generations used, query count, and the best one-pixel parameters
+$(x,y,r,g,b)$. When tensor export is enabled, successful adversarial examples are also saved so
+that explanation computation can be performed later without rerunning the attack stage. For the
+multi-target prior runner, the output is image-level rather than target-level: one CSV row
+stores the target set, a success mask, the best pixel tuple per target, and the resulting
+predicted labels and confidences.
+
+\begin{algorithm}[tbp]
+\caption{Top-level attack runner behaviour}
+\label{alg:attack_runner}
+\begin{algorithmic}
+\Procedure{RunAttackMode}{$mode, args$}
+    \State load CIFAR-10 test data and the pretrained classifier
+    \State optionally restrict the dataset to a fixed index file
+    \State evaluate clean predictions and keep only eligible images
+    \ForAll{eligible image $i$}
+        \If{$mode$ is untargeted or guided}
+            \State run a DE-based one-pixel search for one image
+        \ElsIf{$mode$ is targeted sweep}
+            \State loop over selected targets and run vanilla DE per target
+        \Else
+            \State build target priors and run one vectorised multi-target DE search
+        \EndIf
+        \State write structured CSV outputs for the run
+        \If{successful tensor export is enabled}
+            \State save the adversarial tensor for later explanation analysis
+        \EndIf
+    \EndFor
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+At the lower level, the untargeted DE attack searches directly in a five-dimensional candidate
+space $(x,y,r,g,b)$. Population members are evaluated in a vectorised batch, fitness is defined
+from class probabilities, and the search stops early when any candidate crosses the configured
+threshold. The RISE-guided variant preserves the same DE structure but biases the coordinate
+proposal mechanism with a RISE-derived prior over pixel locations. The multi-target prior
+runner differs more substantially: it constructs a shared coordinate pool from per-target
+priors, evolves RGB values with DE, and occasionally resamples the coordinate index from the
+target-specific prior distribution. This makes the fastprior implementation materially different
+from a naive loop that would attack each target completely independently.
+
+For the frozen 10k-scale experiments used in \Cref{sec:results}, the principal raw attack
+artefacts are:
 \begin{itemize}
   \item \texttt{results/attacks/de1px\_untargeted\_10000.csv}
   \item \texttt{results/attacks/de1px\_targeted\_fastprior\_10000.csv}
 \end{itemize}
-Optional adversarial tensors can also be written under \texttt{results/adv\_tensors/} so that explanation computation can be performed later without rerunning the attack stage.
+Optional adversarial tensors can also be written under \texttt{results/adv\_tensors/} so that
+explanation computation can be performed later without rerunning the attack stage.
 
 \subsection{Explanation pipeline}
-A dedicated explanation script computes Grad-CAM, Integrated Gradients, and RISE on the clean and adversarial versions of the same image index.
-The main output is a single ``before vs after'' CSV per run, containing the information required for stability and faithfulness analysis.
+A dedicated explanation script computes Grad-CAM, Integrated Gradients, and RISE on the clean
+and adversarial versions of the same dataset index. For each requested image, the script first
+loads the clean normalised input and obtains the clean predicted class. That clean prediction is
+then used as the target class for all three explainers. Clean explanations are always computed.
+If a saved adversarial tensor exists for the same dataset index, the script computes
+adversarial explanations as well and then derives the before-vs-after metrics used in the
+evaluation chapter.
 
-For the frozen 10k runs, the main explanation artefacts include:
+\begin{algorithm}[tbp]
+\caption{Explanation and metric export pipeline}
+\label{alg:explanation_runner}
+\begin{algorithmic}
+\Procedure{BuildExplanationRows}{$indices, adv\_dir, cfg$}
+    \State load the pretrained classifier and the CIFAR-10 test set
+    \ForAll{dataset index $i$}
+        \State load the clean image and compute the clean predicted class
+        \State compute clean Grad-CAM, IG, and RISE maps for that predicted class
+        \State compute clean deletion AUC for each explainer
+        \If{an adversarial tensor for $i$ exists in \texttt{adv\_dir}}
+            \State load the adversarial tensor and compute its predicted label
+            \State compute adversarial Grad-CAM, IG, and RISE maps for the clean predicted class
+            \State compute IoU@10, Spearman, and adversarial deletion AUC
+        \EndIf
+        \State append one structured row to the before-vs-after CSV
+    \EndFor
+    \State write the completed CSV for later aggregation
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+The main explanation output is a single ``before vs after'' CSV per run. For the frozen 10k
+runs, the main explanation artefacts include:
 \begin{itemize}
   \item \texttt{results/explanations/before\_after\_10000\_untargeted\_gpu.csv}
   \item \texttt{results/explanations/before\_after\_10000\_fastprior\_gpu.csv}
   \item \texttt{results/final\_pack/before\_after\_10000\_rise\_guided\_gpu.csv}
 \end{itemize}
-These files support the computation of IoU@10, Spearman rank correlation, and deletion AUC before and after attack.
+These files support the computation of IoU@10, Spearman rank correlation, and deletion AUC
+before and after attack.
 
 \subsection{Summaries, plots, and report-ready exports}
-The final report does not read raw experiment CSVs directly.
-Instead, the repository includes aggregation scripts that transform raw outputs into compact summaries, comparison narratives, plots, and \LaTeX{} tables.
+The final report does not read raw experiment CSVs directly. Instead, the repository includes
+aggregation scripts that transform raw outputs into compact summaries, comparison narratives,
+plots, and \LaTeX{} tables.
 
-A comparison script produces Markdown summaries across multiple attack runs, including the correct handling of the fastprior \texttt{hit\_mask} encoding.
-The frozen comparison narrative used for RQ2 is stored in:
+A comparison script produces Markdown summaries across multiple attack runs, including the
+correct handling of the fastprior \texttt{hit\_mask} encoding. The frozen comparison narrative
+used for RQ2 is stored in:
 \begin{itemize}
   \item \texttt{results/final\_pack/summary\_compare\_10000\_untargeted\_fastprior\_rise\_guided\_gpu\_v4.md}
 \end{itemize}
 
-A separate ``story and plots'' stage produces the consolidated metrics table and narrative summary for the guidance comparison:
+A separate ``story and plots'' stage produces the consolidated metrics table and narrative
+summary for the guidance comparison:
 \begin{itemize}
   \item \texttt{results/final\_pack/rq2\_metrics\_table.csv}
   \item \texttt{results/final\_pack/story\_rq2\_guidance\_tradeoff.md}
 \end{itemize}
 
-Report tables are generated automatically under \texttt{report/tables/final\_pack/}, including \texttt{rq2\_attack\_summary.tex}, \texttt{rq2\_stability\_means.tex}, and \texttt{rq2\_del\_delta\_means.tex}.
-The report therefore imports generated artefacts rather than manually transcribed numbers, which reduces error risk and makes inconsistencies easier to detect.
+Report tables are generated automatically under \texttt{report/tables/final\_pack/}, including
+\texttt{rq2\_attack\_summary.tex}, \texttt{rq2\_stability\_means.tex}, and
+\texttt{rq2\_del\_delta\_means.tex}. The report therefore imports generated artefacts rather
+than manually transcribed numbers, which reduces error risk and makes inconsistencies easier to
+detect.
 
 \subsection{Verification and testing}
-Because this is a computing artefact as well as an experimental study, verification is important.
-The implementation was checked in several complementary ways.
+Because this is a computing artefact as well as an experimental study, verification is
+important. The implementation was checked in several complementary ways.
 
-First, baseline sanity checks were used to verify that the classifier and dataset pipeline behaved as expected on fixed subsets before expensive large-scale runs were attempted.
-Second, attack smoke tests were run on small index lists before the 10k-scale experiments, so that configuration or device issues could be caught cheaply.
-Third, metric code was validated through controlled checks and small-scale inspection to ensure that overlap, rank-correlation, and deletion-based summaries were behaving plausibly.
-Fourth, reproducibility checks were supported through fixed seeds, logged configuration parameters, and frozen artefacts used by the report.
+First, baseline sanity checks were used to verify that the classifier and dataset pipeline
+behaved as expected on fixed subsets before expensive large-scale runs were attempted. Second,
+attack smoke tests were run on small index lists before the 10k-scale experiments, so that
+configuration or device issues could be caught cheaply. Third, metric code was validated
+through controlled checks and small-scale inspection to ensure that overlap, rank-correlation,
+and deletion-based summaries were behaving plausibly. Fourth, reproducibility checks were
+supported through fixed seeds, logged configuration parameters, and frozen artefacts used by the
+report.
 
-These checks do not amount to a formal proof of correctness, but they do provide evidence that the artefact is behaving consistently and that the reported outputs are not the product of a single unverified run.
+These checks do not amount to a formal proof of correctness, but they do provide evidence that
+the artefact is behaving consistently and that the reported outputs are not the product of a
+single unverified run.
 
 \subsection{Frozen results pack and evidence mapping}
-All reported numbers in the evaluation chapter are derived from a frozen results pack under \texttt{results/final\_pack/}.
-This directory contains the relevant CSVs, logs, plots, summaries, and supporting documentation, including:
+All reported numbers in the evaluation chapter are derived from a frozen results pack under
+\texttt{results/final\_pack/}. This directory contains the relevant CSVs, logs, plots,
+summaries, and supporting documentation, including:
 \begin{itemize}
   \item \texttt{results/final\_pack/README.md}, which describes the pack contents;
-  \item \texttt{results/final\_pack/CLAIMS\_EVIDENCE.md}, which maps major claims to specific artefacts.
+  \item \texttt{results/final\_pack/CLAIMS\_EVIDENCE.md}, which maps major claims to specific
+  artefacts.
 \end{itemize}
 
-Freezing the pack serves two purposes.
-First, it prevents result drift while the report text is being edited.
-Second, it creates a clear evidential chain from raw run outputs to final claims, which is important for both reproducibility and research integrity.
+Freezing the pack serves two purposes. First, it prevents result drift while the report text is
+being edited. Second, it creates a clear evidential chain from raw run outputs to final claims,
+which is important for both reproducibility and research integrity.
 
 \subsection{Reproducibility considerations}
 The implementation is designed to support reproducibility and auditability:
@@ -112,14 +297,20 @@ The implementation is designed to support reproducibility and auditability:
   \item the evaluated image set is fixed to indices 0--9{,}999;
   \item eligibility is determined from the clean model and reused consistently;
   \item random seeds are fixed for the frozen runs;
-  \item attack outputs record configuration details such as population size, crossover settings, generation limits, and stopping thresholds;
+  \item attack outputs record configuration details such as population size, crossover settings,
+  generation limits, stopping thresholds, and guidance parameters;
+  \item explanation outputs record a stable before-vs-after schema used by the summary stage;
   \item the report imports only frozen figures and tables produced from the final pack.
 \end{itemize}
 
-An important practical decision is that the report depends on imported artefacts rather than on manual copying.
-That makes the final document more trustworthy, because each major number can be traced back to a generated file rather than to handwritten transcription.
+An important practical decision is that the report depends on imported artefacts rather than on
+manual copying. That makes the final document more trustworthy, because each major number can
+be traced back to a generated file rather than to handwritten transcription.
 
 \subsection{Hardware and software}
-Development and report writing were performed on a macOS workstation, while the large 10k-scale runs were executed with CUDA-enabled GPU acceleration on a dedicated compute environment.
-The implementation is written in Python using PyTorch and supporting scientific libraries.
-Where possible, the same codepaths are structured to run on CPU or GPU depending on the selected device, while the frozen large-scale results reported here come from the GPU-backed execution environment.
+Development and report writing were performed on a macOS workstation, while the large 10k-scale
+runs were executed with CUDA-enabled GPU acceleration on a dedicated compute environment. The
+implementation is written in Python using PyTorch and supporting scientific libraries. Where
+possible, the same codepaths are structured to run on CPU or GPU depending on the selected
+device, while the frozen large-scale results reported here come from the GPU-backed execution
+environment.
