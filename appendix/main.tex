@@ -199,8 +199,8 @@ The following tables are the report-ready exports generated from the frozen resu
 
 \chapter{Reproducibility Route}
 
-This project was structured so that the report could be rebuilt from version-controlled sources
-and imported generated assets.
+This project was structured so that the submitted PDFs could be rebuilt from version-controlled
+sources and imported generated assets.
 
 A compact local route is:
 
@@ -210,12 +210,22 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
+# Rebuild the main report PDF
 cd report
+latexmk -pdf -halt-on-error main.tex
+
+# Rebuild the appendix PDF
+cd ../appendix
 latexmk -pdf -halt-on-error main.tex
 \end{Verbatim}
 
+Under the current project setup, the main report is produced at
+\path{report/build/main.pdf} and the appendix is produced at
+\path{appendix/main.pdf}.
+
 The main report uses generated figure and table assets stored under
-\texttt{report/figures/final\_pack/} and \texttt{report/tables/final\_pack/}.
+\path{report/figures/final_pack/} and
+\path{report/tables/final_pack/}.
 The appendix inventory and the frozen-pack structure are included so that a marker can inspect
 the evidence trail without having to search through the repository manually.
 
