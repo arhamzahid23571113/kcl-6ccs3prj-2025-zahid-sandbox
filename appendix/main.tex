@@ -53,7 +53,7 @@
   {\large This document accompanies the main report and contains supporting appendix material, supplementary figures and tables, and reproducibility information.\par}
 
   \vfill
-  {\large March 2026\par}
+  {\large April 2026\par}
 \end{titlepage}
 
 \pagenumbering{roman}
@@ -82,16 +82,17 @@ The appendix has four goals:
 
 The main report was written from frozen artefacts rather than from manually copied numbers.
 In practice, this means that the quantitative claims in the report are backed by generated CSV,
-Markdown summary files, report-ready tables, and report-ready figures stored in the repository.
+Markdown summary files, report-ready tables, report-ready figures, and run logs stored in the
+repository.
 
 The evidence chain used for the report can be summarised as follows:
 
 \begin{itemize}
-  \item Raw attack outputs are stored as frozen CSV artefacts in \texttt{results/final\_pack/}.
-  \item Explanation outputs for the reported 10k runs are stored as frozen CSV artefacts in \texttt{results/final\_pack/}.
-  \item Aggregated summaries and comparison narratives are stored as frozen Markdown artefacts in \texttt{results/final\_pack/}.
-  \item Report-ready figures are stored in \texttt{report/figures/final\_pack/}.
-  \item Report-ready tables are stored in \texttt{report/tables/final\_pack/}.
+  \item Raw attack outputs and supporting run logs are stored in the frozen pack under \path{results/final_pack/}.
+  \item Explanation outputs for the reported 10k runs are stored as frozen CSV artefacts under \path{results/final_pack/}.
+  \item Aggregated summaries and comparison narratives are stored as frozen Markdown artefacts under \path{results/final_pack/}.
+  \item Report-ready figures are stored under \path{report/figures/final_pack/}.
+  \item Report-ready tables are stored under \path{report/tables/final_pack/}.
   \item The report imports these generated assets rather than retyping values by hand.
 \end{itemize}
 
@@ -110,6 +111,8 @@ This design was intended to improve traceability and reduce transcription risk.
 \nolinkurl{results/final_pack/summary_compare_10000_untargeted_fastprior_rise_guided_gpu_v4.md} & Cross-run comparison summary used to interpret the main RQ2 result. \\
 \nolinkurl{results/final_pack/de1px_untargeted_10000.csv} & Frozen untargeted attack results on the 10k index set. \\
 \nolinkurl{results/final_pack/de1px_targeted_fastprior_10000.csv} & Frozen fastprior targeted attack results on the 10k index set. \\
+\nolinkurl{results/final_pack/de1px_rise_guided_10000.log} & Frozen execution log for the 10k RISE-guided attack run reported in RQ2. \\
+\nolinkurl{results/final_pack/explanations_10000_rise_guided_gpu.log} & Frozen execution log for the 10k RISE-guided explanation pass. \\
 \nolinkurl{results/final_pack/before_after_10000_untargeted_gpu.csv} & Frozen explanation metrics for untargeted attack outputs. \\
 \nolinkurl{results/final_pack/before_after_10000_fastprior_gpu.csv} & Frozen explanation metrics for fastprior outputs. \\
 \nolinkurl{results/final_pack/before_after_10000_rise_guided_gpu.csv} & Frozen explanation metrics for RISE-guided outputs. \\
