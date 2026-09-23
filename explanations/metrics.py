@@ -8,11 +8,16 @@ _SAL_CH = 1
 
 def topk_mask(sal: torch.Tensor, k_frac: float) -> torch.Tensor:
     assert sal.ndim == _SAL_NDIMS and sal.shape[1] == _SAL_CH
+    if not 0 < k_frac <= 1:
+        raise ValueError('k_frac must be in (0, 1]')
     H, W = sal.shape[-2:]
     k = max(1, int(round(k_frac * H * W)))
-    flat = sal.view(1, -1)
-    thresh = torch.topk(flat, k, dim=1).values.min()
-    return sal >= thresh
+    # A threshold includes every pixel tied at the boundary, sometimes all pixels.
+    # Stable sorting picks exactly k pixels, breaking ties by pixel position.
+    order = torch.argsort(sal.reshape(-1), descending=True, stable=True)
+    mask = torch.zeros(sal.numel(), dtype=torch.bool, device=sal.device)
+    mask[order[:k]] = True
+    return mask.reshape_as(sal)
 
 
 def iou_at_k(a: torch.Tensor, b: torch.Tensor, k_frac: float = 0.1) -> float:
@@ -24,12 +29,14 @@ def iou_at_k(a: torch.Tensor, b: torch.Tensor, k_frac: float = 0.1) -> float:
 
 
 def _rankdata_torch(x: torch.Tensor) -> torch.Tensor:
-    flat = x.view(-1)
-    order = torch.argsort(flat)
+    flat = x.reshape(-1)
+    order = torch.argsort(flat, stable=True)
+    _, counts = torch.unique_consecutive(flat[order], return_counts=True)
+    ends = counts.cumsum(dim=0)
+    starts = ends - counts + 1
+    average_ranks = ((starts + ends).to(torch.float32) / 2).repeat_interleave(counts)
     ranks = torch.empty_like(order, dtype=torch.float32)
-    ranks[order] = torch.arange(
-        1, order.numel() + 1, device=x.device, dtype=torch.float32
-    )
+    ranks[order] = average_ranks
     return ranks.view_as(x)
 
 
@@ -38,11 +45,12 @@ def spearman_r(a: torch.Tensor, b: torch.Tensor) -> float:
     b = b.to(dtype=torch.float32)
     ra = _rankdata_torch(a)
     rb = _rankdata_torch(b)
-    eps = torch.tensor(
-        torch.finfo(torch.float32).eps, device=a.device, dtype=torch.float32
-    )
-    ra = (ra - ra.mean()) / (ra.std(unbiased=False) + eps)
-    rb = (rb - rb.mean()) / (rb.std(unbiased=False) + eps)
+    std_a = ra.std(unbiased=False)
+    std_b = rb.std(unbiased=False)
+    if std_a == 0 or std_b == 0:
+        return 0.0  # Explicit convention for an undefined correlation.
+    ra = (ra - ra.mean()) / std_a
+    rb = (rb - rb.mean()) / std_b
     return float((ra * rb).mean().item())
 
 
