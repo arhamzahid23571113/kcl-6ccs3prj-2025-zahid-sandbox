@@ -1,15 +1,15 @@
 # Improving One-Pixel Attacks on Image Classifiers
 
-This ZIP contains the source code and supporting project scripts for the project **Improving One-Pixel Attacks on Image Classifiers**.
+This repository contains the source code, report sources, experiment outputs, and supporting scripts for **Improving One-Pixel Attacks on Image Classifiers**.
 
 The project studies black-box one-pixel adversarial attacks on image classifiers, with two main research questions:
 
 1. **RQ1:** What effect do one-pixel adversarial perturbations have on explanation methods?
 2. **RQ2:** Can responsibility-map guidance improve one-pixel attack behaviour, measured in terms of success, query cost, and explanation-side properties?
 
-This source-code submission contains the implemented Python code, configuration files, and supporting notes needed to understand and run the software artefact.
+The repository preserves both the source-code submission and later research artefacts.
 
-## What is included in this ZIP
+## Repository contents
 
 Important directories and files:
 
@@ -17,25 +17,16 @@ Important directories and files:
 - `explanations/` — explanation methods and utilities
 - `scripts/` — command-line entry points for evaluation, attacks, explanations, summaries, and exports
 - `docs/` — supporting notes and project documentation
-- `src/` — source directory placeholder
-- `tests/` — tests / validation placeholder
+- `report/`, `appendix/` — LaTeX sources and report figures
+- `results/` — tracked outputs from earlier runs (large; not regenerated automatically)
+- `tests/` — focused metrics regression tests
 - `requirements.txt` — Python dependencies
 - `pyproject.toml` — project tooling/configuration
 - `Makefile` — convenience commands
 
-## What is not included in this ZIP
+## Data and other generated files
 
-To keep the source-code submission small and focused, this ZIP does **not** include large artefacts such as:
-
-- downloaded datasets
-- experiment results
-- logs
-- frozen result packs
-- LaTeX report sources
-- appendix sources
-- built PDFs
-
-The **main report PDF** and **appendix PDF** are submitted separately.
+The CIFAR-10 dataset is downloaded locally on first use and is excluded from Git. Some result tensors, plots, tables, and LaTeX sources are already tracked. This repository contains more than 5,000 tracked files under `results/`, so a clone may be sizable. Built report PDFs are excluded.
 
 ## Environment setup
 
@@ -101,7 +92,7 @@ When the scripts are run, they create output directories such as:
 - `results/plots/`
 - `results/tables/`
 
-These generated artefacts are not included in this ZIP.
+Some earlier generated artefacts are tracked; new outputs are written to the selected paths.
 
 ## Verification
 
@@ -113,9 +104,13 @@ The project was developed with several practical checks in mind:
 - logged configurations for final experiments
 - modular scripts with stable intermediate file outputs
 
+Run the focused, data-free metric checks with `python -m unittest discover -s tests -p 'test_*.py'` after installing dependencies. Full experiment validation requires downloading CIFAR-10 and pretrained model weights and may require GPU time.
+
+**Metric compatibility:** `topk_mask` now selects exactly the requested number of pixels when saliency values tie, and Spearman correlation uses average ranks for ties. The tracked result files and report figures were produced before this correction. Regenerate explanations, summaries, and plots before using the corrected metrics to compare against those historical results; do not interpret the old plots as newly recomputed.
+
 ## Notes
 
-This ZIP is intended to provide the implemented source code for the computing artefact. The written dissertation/report and appendix are separate submission components.
+The written dissertation and appendix also have source files in this repository.
 
 ## Licence / attribution note
 
