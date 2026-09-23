@@ -31,5 +31,5 @@ class SaliencyMetricsTests(unittest.TestCase):
         self.assertEqual(spearman_r(first, second), 0.0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

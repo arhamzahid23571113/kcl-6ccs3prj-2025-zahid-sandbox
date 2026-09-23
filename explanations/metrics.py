@@ -9,7 +9,7 @@ _SAL_CH = 1
 def topk_mask(sal: torch.Tensor, k_frac: float) -> torch.Tensor:
     assert sal.ndim == _SAL_NDIMS and sal.shape[1] == _SAL_CH
     if not 0 < k_frac <= 1:
-        raise ValueError('k_frac must be in (0, 1]')
+        raise ValueError("k_frac must be in (0, 1]")
     H, W = sal.shape[-2:]
     k = max(1, int(round(k_frac * H * W)))
     # A threshold includes every pixel tied at the boundary, sometimes all pixels.
