@@ -20,10 +20,10 @@ python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 python scripts/eval_cifar10.py --limit 100
-python scripts/run_one_pixel.py untargeted --limit 6 --pop 96 --max-gens 15 --out tmp/smoke/untargeted.csv
+python -m scripts.run_one_pixel untargeted --limit 6 --pop 96 --max-gens 15 --out tmp/smoke/untargeted.csv
 ```
 
-The last command is a small smoke run. It does not reproduce the 10,000-image study or its headline percentages. `python scripts/run_one_pixel.py --help` lists attack variants and options; the `Makefile` includes further smoke workflows. Larger experiments can require long runtimes and significant storage.
+The last command is a small smoke run. It does not reproduce the 10,000-image study or its headline percentages. `python -m scripts.run_one_pixel --help` lists attack variants and options; the `Makefile` includes further smoke workflows. Larger experiments can require long runtimes and significant storage.
 
 ## Repository guide
 
