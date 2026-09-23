@@ -1,122 +1,43 @@
-# Improving One-Pixel Attacks on Image Classifiers
+# One-pixel attacks and explanation stability
 
-This ZIP contains the source code and supporting project scripts for the project **Improving One-Pixel Attacks on Image Classifiers**.
+A reproducible study of sparse black-box adversarial attacks on a CIFAR-10 image classifier. The project compares differential-evolution one-pixel attacks with two explanation-guided variants, then measures how successful perturbations change Grad-CAM, Integrated Gradients, and RISE explanations.
 
-The project studies black-box one-pixel adversarial attacks on image classifiers, with two main research questions:
+## Questions and findings
 
-1. **RQ1:** What effect do one-pixel adversarial perturbations have on explanation methods?
-2. **RQ2:** Can responsibility-map guidance improve one-pixel attack behaviour, measured in terms of success, query cost, and explanation-side properties?
+1. **How do successful one-pixel attacks affect explanations?** All three methods changed on successful adversarial images; Integrated Gradients was the most stable under the study's overlap and rank-correlation measures. Deletion-based faithfulness fell on average for all three.
+2. **Does responsibility-map guidance improve attack behaviour?** In the tested setup, RISE-guided search matched the untargeted baseline's image-level success rate without reducing median query cost. The fastprior variant found more explanation-stable successes in its selected subset, but its overall success rate was lower and its query cost higher.
 
-This source-code submission contains the implemented Python code, configuration files, and supporting notes needed to understand and run the software artefact.
+The fixed evaluation used 10,000 CIFAR-10 test images, of which 9,213 were correctly classified and eligible for attack. The untargeted baseline and RISE-guided variant each succeeded on 3,477 eligible images (37.74%); fastprior succeeded on 1,310 (14.22%). These are results for one pretrained ResNet-20 model and the reported configurations, not general performance guarantees. See the [results](report/sections/results.tex), [conclusions](report/sections/conclusion.tex), and [claims-to-evidence map](docs/REPORT_EVIDENCE_MAP.md) for definitions and caveats.
 
-## What is included in this ZIP
+![Image-level attack success rate for three evaluated variants](report/figures/final_pack/rq2_asr_image_percent.png)
 
-Important directories and files:
+## Reproduce a small run
 
-- `attacks/` — reusable implementations of differential-evolution one-pixel attack variants
-- `explanations/` — explanation methods and utilities
-- `scripts/` — command-line entry points for evaluation, attacks, explanations, summaries, and exports
-- `docs/` — supporting notes and project documentation
-- `src/` — source directory placeholder
-- `tests/` — tests / validation placeholder
-- `requirements.txt` — Python dependencies
-- `pyproject.toml` — project tooling/configuration
-- `Makefile` — convenience commands
+Use Python 3.10 or newer. PyTorch is a substantial dependency; a CUDA GPU is helpful for full runs. The first run downloads CIFAR-10 and pretrained model weights through `torchvision` and `torch.hub`.
 
-## What is not included in this ZIP
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python scripts/eval_cifar10.py --limit 100
+python scripts/run_one_pixel.py untargeted --limit 6 --pop 96 --max-gens 15 --out tmp/smoke/untargeted.csv
+```
 
-To keep the source-code submission small and focused, this ZIP does **not** include large artefacts such as:
+The last command is a small smoke run. It does not reproduce the 10,000-image study or its headline percentages. `python scripts/run_one_pixel.py --help` lists attack variants and options; the `Makefile` includes further smoke workflows. Larger experiments can require long runtimes and significant storage.
 
-- downloaded datasets
-- experiment results
-- logs
-- frozen result packs
-- LaTeX report sources
-- appendix sources
-- built PDFs
+## Repository guide
 
-The **main report PDF** and **appendix PDF** are submitted separately.
+| Path | Contents |
+| --- | --- |
+| `attacks/` | One-pixel differential-evolution variants |
+| `explanations/` | Grad-CAM, Integrated Gradients, RISE, and comparison metrics |
+| `scripts/` | Evaluation, attack, explanation, summary, and plot entry points |
+| `report/` | Dissertation source, tables, and figures |
+| `results/` | Saved experiment artefacts used by the report |
+| `docs/` | Study notes and evidence mapping |
 
-## Environment setup
+The results directory includes large historical outputs. New local datasets and scratch outputs belong under `data/` and `tmp/`, respectively. The report's scientific limitations are stated in its [conclusion](report/sections/conclusion.tex): one dataset, one main architecture, one sparse threat model, and explanation analysis on successful adversarial subsets only.
 
-A local setup route is:
+## Checks
 
-    python3 -m venv .venv
-    source .venv/bin/activate
-    pip install -r requirements.txt
-
-This project was developed primarily with Python on macOS, with larger GPU-backed runs carried out in a CUDA environment.
-
-## Main workflow
-
-The core software workflow is:
-
-1. evaluate the baseline model and identify the eligible subset
-2. run one-pixel attack variants
-3. compute explanations on clean/adversarial pairs
-4. aggregate outputs into summaries and exported tables/plots
-
-The implementation is organised as a reproducible research artefact rather than as a single script. Attack runs, explanation runs, summaries, and exports are kept as separate stages connected through stable file outputs.
-
-## Key script entry points
-
-Main scripts:
-
-- `scripts/eval_cifar10.py`
-- `scripts/run_one_pixel.py`
-- `scripts/run_explanations.py`
-- `scripts/summarize_explanations.py`
-- `scripts/summarize_compare_explanations.py`
-- `scripts/summarize_compare_explanations_v4.py`
-- `scripts/make_rq2_story_and_plots.py`
-- `scripts/make_report_tables.py`
-
-## Data
-
-The project uses CIFAR-10.
-
-If the dataset is not already present locally, the relevant scripts will download CIFAR-10 automatically into a local `data/` directory when run.
-
-## Example usage
-
-Evaluate the pretrained CIFAR-10 model on a small subset:
-
-    python scripts/eval_cifar10.py --limit 100
-
-Run the untargeted one-pixel attack on a small subset:
-
-    python scripts/run_one_pixel.py untargeted --limit 100 --out results/attacks/de1px_untargeted_smoke.csv
-
-Compute explanations for a run:
-
-    python scripts/run_explanations.py --out results/explanations/before_after_smoke.csv --adv-dir results/adv_tensors/smoke_run
-
-## Outputs
-
-When the scripts are run, they create output directories such as:
-
-- `data/`
-- `results/attacks/`
-- `results/explanations/`
-- `results/plots/`
-- `results/tables/`
-
-These generated artefacts are not included in this ZIP.
-
-## Verification
-
-The project was developed with several practical checks in mind:
-
-- baseline sanity checks before large-scale runs
-- smoke tests before longer attack jobs
-- fixed seeds for frozen runs
-- logged configurations for final experiments
-- modular scripts with stable intermediate file outputs
-
-## Notes
-
-This ZIP is intended to provide the implemented source code for the computing artefact. The written dissertation/report and appendix are separate submission components.
-
-## Licence / attribution note
-
-This repository contains original project code together with references to third-party libraries, benchmark datasets, and cited research papers. External dependencies and cited methods remain the intellectual property of their respective authors and maintainers.
+The repository's GitHub Actions workflow runs its configured pre-commit checks on pushes and pull requests. The research results are supported by the saved artefacts and report; CI is a code-quality check, not a rerun of the full experiments.
